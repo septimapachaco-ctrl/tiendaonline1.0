@@ -1,10 +1,10 @@
-# Mi Pequeño Pony — Tienda Online 1.0
+# Mi Pequeña Delfina — Tienda Online 1.0
 
 Tienda online de artículos para bebés y niños, responsive, con catálogo, carrito, cobro con **Mercado Pago Checkout Pro** y **panel de administración** para gestionar productos, stock, pedidos, clientes, cupones y usuarios.
 
 Stack: Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Prisma · PostgreSQL y Storage en Supabase.
 
-La identidad visual sigue el manual de marca: paleta Lila Unicornio / Rosa Nube / Menta / Polvo de Hada / Cielo Bebé sobre Crema Algodón, tipografías Baloo 2 (títulos), Nunito (texto) y Caveat (acentos), degradado firma, estrellas de cuatro puntas y tono de voz cálido. Para cumplir contraste AA, los botones usan un lila más profundo (`#7C5BC9`) con texto blanco; el Lila Unicornio original (`#B79CED`) queda para el logotipo y los detalles.
+La identidad visual sigue el manual de marca de **Mi Pequeña Delfina**: paleta marina (Azul Marea, Aqua Delfina, Arena Suave y Blanco Espuma, con Violeta Coral y Rosa Concha como acentos), texto en Azul Profundo, tipografías Baloo 2 (títulos), Nunito (texto) y Caveat (acentos), degradado firma, burbujas, olas y Delfina —la delfín bebé— como guía en el inicio, la canasta vacía, la confirmación de compra y la página 404. Los botones usan fondo Azul Marea con texto Azul Profundo (contraste AA 6,4:1); con texto blanco no llegaría a AA. Las burbujas animadas se detienen con `prefers-reduced-motion`.
 
 ## Qué incluye
 
@@ -34,7 +34,7 @@ npm run dev
 
 ## Base de datos y fotos en Supabase
 
-Proyecto: `tienda-mi-pequeno-pony` (región São Paulo, `sa-east-1`). Ya tiene creadas las tablas, el catálogo de ejemplo (12 productos, 5 categorías, 4 zonas de envío, cupón `BIENVENIDA10`) y el bucket público `productos` para las fotos.
+Proyecto: `tienda-mi-pequeno-pony` (región São Paulo, `sa-east-1`; el nombre del proyecto se puede cambiar en *Project Settings → General* sin afectar la conexión). Ya tiene creadas las tablas, el catálogo de ejemplo (12 productos, 5 categorías, 4 zonas de envío, cupón `BIENVENIDA10`) y el bucket público `productos` para las fotos.
 
 - **Conexión:** en Supabase → *Connect* → *ORMs* → *Prisma* están las dos URLs. `DATABASE_URL` usa el pooler (puerto 6543, con `pgbouncer=true`) y `DIRECT_URL` la conexión directa (puerto 5432). La contraseña es la de la base; si no la tenés, se resetea en *Project Settings → Database*.
 - **Fotos:** `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` (*Project Settings → API*). La service role key es secreta: solo va en el servidor/Vercel, nunca en variables `NEXT_PUBLIC_*`.
@@ -83,7 +83,7 @@ El certificado SSL lo provee el hosting (Vercel, Cloudflare o Let's Encrypt en u
 ## Personalización de marca
 
 - Nombre, WhatsApp y URL: variables `NEXT_PUBLIC_*`.
-- Colores: bloque `@theme` en `src/app/globals.css`. Tipografías: `src/app/layout.tsx`. Logo (isotipo SVG): `src/components/Logo.tsx`. Favicon: `src/app/icon.svg`.
+- Colores: bloque `@theme` en `src/app/globals.css`. Tipografías: `src/app/layout.tsx`. Logo, isotipo y personaje Delfina (SVG): `src/components/Logo.tsx`. Olas: `src/components/Olas.tsx`. Favicon: `src/app/icon.svg`.
 - Catálogo de ejemplo: `prisma/catalog.ts`.
 - Textos institucionales: `src/app/(tienda)/nosotros`, `envios`, `terminos`.
 

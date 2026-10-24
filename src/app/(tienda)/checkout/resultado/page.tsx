@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { money, ORDER_STATUS } from "@/lib/format";
 import { getPayment, mpEnabled } from "@/lib/mercadopago";
 import { applyPayment } from "@/lib/orders";
+import { Delfina } from "@/components/Logo";
 import { PurchaseTracker } from "./PurchaseTracker";
 
 export const metadata: Metadata = { title: "Estado de tu compra", robots: { index: false } };
@@ -41,9 +42,9 @@ export default async function ResultPage({ searchParams }: { searchParams: SP })
   return (
     <div className="container-page max-w-xl py-16 text-center">
       {paid && <PurchaseTracker orderId={order.id} value={order.total} />}
-      <p className="text-5xl" aria-hidden="true">{paid ? "🦄" : pending ? "🌙" : "☁️"}</p>
+      {paid ? <Delfina className="mx-auto h-40 w-40" /> : <p className="text-5xl" aria-hidden="true">{pending ? "🌙" : "🌊"}</p>}
       <h1 className="mt-4 text-[40px]">
-        {paid ? "Tu pedido ya está galopando hacia vos" : pending ? "Tu pago está en camino" : "El pago no se completó"}
+        {paid ? "Tu pedido ya está nadando hacia vos" : pending ? "Tu pago está en camino, como una ola" : "El pago no se completó"}
       </h1>
       <p className="mt-3 text-muted">
         Pedido <b>#{order.number}</b> · {money(order.total)} · Estado: {ORDER_STATUS[order.status]}

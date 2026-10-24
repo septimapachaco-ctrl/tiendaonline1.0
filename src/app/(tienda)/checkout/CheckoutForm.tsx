@@ -68,7 +68,7 @@ export function CheckoutForm({ zones, defaults, loggedIn }: { zones: Zone[]; def
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Tus datos</h2>
             {!loggedIn && (
-              <Link href="/login?next=/checkout" className="text-sm text-brand underline">¿Ya tenés cuenta? Ingresá</Link>
+              <Link href="/login?next=/checkout" className="text-sm text-profundo underline">¿Ya tenés cuenta? Ingresá</Link>
             )}
           </div>
           <Field name="name" label="Nombre y apellido" defaultValue={defaults.name} required />
@@ -83,7 +83,7 @@ export function CheckoutForm({ zones, defaults, loggedIn }: { zones: Zone[]; def
           {zones.length === 0 && <p className="text-sm text-red-700">No hay formas de entrega configuradas.</p>}
           <div className="space-y-2">
             {zones.map((z) => (
-              <label key={z.id} className={`flex min-h-11 cursor-pointer items-center justify-between rounded-2xl border-2 p-3 text-sm ${zoneId === z.id ? "border-lila bg-lila/10" : "border-line"}`}>
+              <label key={z.id} className={`flex min-h-11 cursor-pointer items-center justify-between rounded-2xl border-2 p-3 text-sm ${zoneId === z.id ? "border-marea bg-aqua/30" : "border-line"}`}>
                 <span className="flex items-center gap-2">
                   <input type="radio" name="zone" checked={zoneId === z.id} onChange={() => setZoneId(z.id)} />
                   {z.isPickup ? `Retiro en ${z.name}` : `Envío a ${z.name}`}
@@ -123,7 +123,7 @@ export function CheckoutForm({ zones, defaults, loggedIn }: { zones: Zone[]; def
           <input value={couponInput} onChange={(e) => setCouponInput(e.target.value)} placeholder="Cupón de descuento" className="input" />
           <button type="button" className="btn-outline" onClick={applyCoupon} disabled={!couponInput || pending}>Aplicar</button>
         </div>
-        {couponMsg && <p className={coupon ? "text-green-700" : "text-red-700"}>{couponMsg}</p>}
+        {couponMsg && <p className={coupon ? "text-green-800" : "text-red-800"}>{couponMsg}</p>}
         <Row label="Subtotal" value={money(cart.subtotal)} />
         {discount > 0 && <Row label="Descuento" value={`-${money(discount)}`} />}
         <Row label="Entrega" value={zone ? (zone.price === 0 ? "Gratis" : money(zone.price)) : "—"} />

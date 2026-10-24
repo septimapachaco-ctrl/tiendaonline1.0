@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       </div>
       <p className="mt-4 text-center text-sm">
         ¿No tenés cuenta?{" "}
-        <Link href={`/registro${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="text-brand underline">Registrate</Link>
+        <Link href={`/registro${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="text-profundo underline">Registrate</Link>
       </p>
     </div>
   );
