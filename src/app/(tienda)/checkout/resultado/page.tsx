@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { money, ORDER_STATUS } from "@/lib/format";
 import { getPayment, mpEnabled } from "@/lib/mercadopago";
@@ -34,7 +35,7 @@ export default async function ResultPage({ searchParams }: { searchParams: SP })
     }
   }
 
-  const order = await db.order.findUnique({ where: { id: orderId } });
+  const [order, user] = await Promise.all([db.order.findUnique({ where: { id: orderId } }), getCurrentUser()]);
   if (!order) return <Message title="No encontramos el pedido" />;
 
   const paid = order.paidAt != null;
@@ -56,14 +57,18 @@ export default async function ResultPage({ searchParams }: { searchParams: SP })
       )}
       <p className="mt-4 text-sm">
         {paid
-          ? `Te enviamos la confirmación a ${order.email}.`
+          ? `Te enviamos la confirmación a ${order.email}, con un enlace para seguir tu pedido.`
           : pending
             ? "Cuando Mercado Pago acredite el pago te avisamos por email."
             : "No se realizó ningún cobro. Podés intentarlo de nuevo cuando quieras o escribirnos por WhatsApp."}
       </p>
       <div className="mt-8 flex justify-center gap-3">
         <Link href="/productos" className="btn">Seguir comprando</Link>
-        <Link href="/cuenta" className="btn-outline">Mis pedidos</Link>
+        {user ? (
+          <Link href="/cuenta" className="btn-outline">Mis pedidos</Link>
+        ) : (
+          <Link href={`/pedido/${order.id}`} className="btn-outline">Ver el estado de mi pedido</Link>
+        )}
       </div>
     </div>
   );

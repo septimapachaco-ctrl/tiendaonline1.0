@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { CartLink } from "./CartLink";
 import { Logo } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
 
 export async function Header() {
-  const [session, categories] = await Promise.all([
-    getSession(),
+  const [user, categories] = await Promise.all([
+    // se valida contra la base: una cookie vieja no debe mostrar "Panel" ni "Mi cuenta"
+    getCurrentUser(),
     db.category.findMany({ orderBy: { sortOrder: "asc" } }),
   ]);
   const links = [
@@ -37,9 +38,9 @@ export async function Header() {
           <form action="/productos" className="hidden xl:block">
             <input name="q" placeholder="Buscar un tesoro…" className="input w-52" aria-label="Buscar" />
           </form>
-          {session ? (
-            <Link href={session.role === "CUSTOMER" ? "/cuenta" : "/admin"} className="hover:underline decoration-marea decoration-2 underline-offset-4">
-              {session.role === "CUSTOMER" ? "Mi cuenta" : "Panel"}
+          {user ? (
+            <Link href={user.role === "CUSTOMER" ? "/cuenta" : "/admin"} className="hover:underline decoration-marea decoration-2 underline-offset-4">
+              {user.role === "CUSTOMER" ? "Mi cuenta" : "Panel"}
             </Link>
           ) : (
             <Link href="/login" className="hover:underline decoration-marea decoration-2 underline-offset-4">
