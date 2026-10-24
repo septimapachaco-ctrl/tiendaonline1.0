@@ -73,15 +73,15 @@ export function AddToCart({ product, variants }: Props) {
           <button className="px-3 py-2" onClick={() => setQty(Math.min(variant?.stock ?? 1, qty + 1))} aria-label="Sumar">+</button>
         </div>
         <button className="btn flex-1" disabled={!available} onClick={add}>
-          {available ? "Llevar magia a casa" : variant ? "Agotado por ahora" : "Combinación no disponible"}
+          {available ? "Llevar calma a casa" : variant ? "Agotado por ahora" : "Combinación no disponible"}
         </button>
       </div>
       {available && variant!.stock <= 3 && (
-        <p className="text-sm text-muted">✦ Quedan {variant!.stock} unidades</p>
+        <p className="text-sm text-muted">Quedan {variant!.stock} unidades</p>
       )}
       {added && (
-        <p className="rounded-2xl bg-menta/50 p-3 text-sm">
-          ✦ Ya está en tu carrito. <Link href="/carrito" className="font-semibold underline">Ver carrito</Link>
+        <p className="rounded-2xl bg-aqua/50 p-3 text-sm">
+          Ya está en tu canasta. <Link href="/carrito" className="font-semibold underline">Ver canasta</Link>
         </p>
       )}
     </div>
@@ -110,7 +110,7 @@ function Picker(props: {
             key={o}
             onClick={() => props.onChange(o)}
             className={`min-h-11 min-w-11 rounded-2xl border-2 px-3 py-1.5 text-sm ${
-              props.value === o ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-lila"
+              props.value === o ? "border-profundo bg-marea text-profundo" : "border-line bg-white hover:border-marea"
             } ${props.isAvailable(o) ? "" : "opacity-40 line-through"}`}
           >
             {o}

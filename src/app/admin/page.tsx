@@ -54,7 +54,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
         <h1 className="text-2xl font-bold">Resumen de ventas</h1>
         <div className="flex gap-1 text-sm">
           {[7, 30, 90, 365].map((d) => (
-            <Link key={d} href={`/admin?dias=${d}`} className={`rounded px-3 py-1.5 ${d === days ? "bg-brand text-white" : "bg-white"}`}>
+            <Link key={d} href={`/admin?dias=${d}`} className={`rounded px-3 py-1.5 ${d === days ? "bg-marea text-profundo" : "bg-white"}`}>
               {d === 365 ? "1 año" : `${d} días`}
             </Link>
           ))}

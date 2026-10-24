@@ -25,9 +25,9 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Pedidos</h1>
       <div className="flex flex-wrap gap-2 text-sm">
-        <Link href="/admin/pedidos" className={`rounded px-3 py-1.5 ${!estado ? "bg-brand text-white" : "bg-white"}`}>Todos</Link>
+        <Link href="/admin/pedidos" className={`rounded px-3 py-1.5 ${!estado ? "bg-marea text-profundo" : "bg-white"}`}>Todos</Link>
         {Object.entries(ORDER_STATUS).map(([k, label]) => (
-          <Link key={k} href={`/admin/pedidos?estado=${k}`} className={`rounded px-3 py-1.5 ${estado === k ? "bg-brand text-white" : "bg-white"}`}>
+          <Link key={k} href={`/admin/pedidos?estado=${k}`} className={`rounded px-3 py-1.5 ${estado === k ? "bg-marea text-profundo" : "bg-white"}`}>
             {label} ({countOf(k)})
           </Link>
         ))}

@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
-/* Paleta del manual de marca "Mi Pequeño Pony" */
+/* Paleta del manual de marca "Mi Pequeña Delfina" */
 @theme {
-  --color-lila: #b79ced; /* Lila Unicornio: marca, detalles, logotipo */
-  --color-brand: #7c5bc9; /* Lila profundo: botones con texto blanco (contraste AA) */
-  --color-brand-dark: #6446ad;
-  --color-rosa: #ffc2d9; /* Rosa Nube */
-  --color-menta: #a8e6cf; /* Menta Sueño */
-  --color-hada: #ffe9a8; /* Amarillo Polvo de Hada */
-  --color-cielo: #bde0fe; /* Cielo Bebé */
-  --color-crema: #fff9f4; /* Crema Algodón: fondo principal */
-  --color-ink: #4a4458; /* Gris Cuento: texto principal */
-  --color-muted: #6e6780;
-  --color-coral: #ff9e9e; /* Coral Suave: alertas amables */
-  --color-line: #ede4f7;
-  --color-soft: #fff9f4;
-  --color-accent: #7c5bc9;
+  --color-marea: #8ecae6; /* Azul Marea: marca, botones primarios */
+  --color-aqua: #a8dadc; /* Aqua Delfina: fondos suaves, secciones alternas */
+  --color-violeta: #c3b1e1; /* Violeta Coral: acento (máx. 15 % de superficie) */
+  --color-concha: #ffc8dd; /* Rosa Concha: destacados, etiquetas (acento) */
+  --color-arena: #f5e6d3; /* Arena Suave: fondos cálidos */
+  --color-espuma: #fdfcfb; /* Blanco Espuma: fondo principal */
+  --color-profundo: #2b3a55; /* Azul Profundo: texto principal */
+  --color-anemona: #ffafb0; /* Coral Anémona: alertas amables */
+
+  /* alias usados por el panel y componentes compartidos */
+  --color-brand: #8ecae6;
+  --color-ink: #2b3a55;
+  --color-muted: #5a6782; /* Azul Profundo aclarado, contraste AA sobre Blanco Espuma */
+  --color-line: #dcebef;
+  --color-soft: #f3f9fa;
 }
 
 @theme inline {
@@ -25,8 +26,8 @@
 }
 
 body {
-  background: var(--color-crema);
-  color: var(--color-ink);
+  background: var(--color-espuma);
+  color: var(--color-profundo);
   line-height: 1.5;
 }
 
@@ -38,31 +39,60 @@ h3 {
   line-height: 1.2;
 }
 
+/* burbujas que suben; se detienen si la persona prefiere menos movimiento */
+@keyframes subir {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translateY(-140px) scale(1.15); opacity: 0; }
+}
+.burbuja {
+  animation: subir 7s ease-in infinite;
+}
+@keyframes flotar {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-10px) rotate(-1deg); }
+}
+.flotar {
+  animation: flotar 6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .burbuja,
+  .flotar {
+    animation: none;
+  }
+  .burbuja {
+    opacity: 0.6;
+  }
+}
+
 @layer components {
   .container-page {
     @apply mx-auto w-full max-w-6xl px-4;
   }
-  /* degradado firma: Lila → Rosa Nube → Cielo Bebé */
+  /* degradado firma: Azul Marea → Aqua Delfina → Violeta Coral, como luz bajo el agua */
   .bg-firma {
-    background: linear-gradient(135deg, #e4d8fa 0%, #ffd9e7 50%, #d7ecff 100%);
+    background: linear-gradient(135deg, #d4ebf6 0%, #dcf0f1 55%, #ebe3f5 100%);
   }
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-3xl bg-brand px-6 py-2.5 text-base font-semibold text-white transition hover:bg-rosa hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-brand disabled:hover:text-white;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-3xl bg-marea px-6 py-2.5 text-base font-semibold text-profundo transition hover:bg-violeta disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-marea;
   }
   .btn-outline {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-3xl border-2 border-lila bg-white px-5 py-2 text-sm font-semibold text-ink transition hover:bg-rosa/40;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-3xl border-2 border-marea bg-white px-5 py-2 text-sm font-semibold text-profundo transition hover:bg-aqua/30;
   }
   .btn-danger {
-    @apply inline-flex min-h-11 items-center justify-center rounded-3xl px-3 py-1.5 text-sm font-semibold text-red-800 hover:bg-coral/30;
+    @apply inline-flex min-h-11 items-center justify-center rounded-3xl px-3 py-1.5 text-sm font-semibold text-red-800 hover:bg-anemona/30;
   }
   .input {
-    @apply min-h-11 w-full rounded-2xl border border-line bg-white px-4 py-2 text-base outline-none focus:border-lila focus:ring-4 focus:ring-lila/25;
+    @apply min-h-11 w-full rounded-2xl border border-line bg-white px-4 py-2 text-base outline-none focus:border-marea focus:ring-4 focus:ring-marea/40;
   }
   .label {
     @apply mb-1 block text-sm font-semibold;
   }
   .card {
-    @apply rounded-[20px] bg-white p-5 shadow-[0_8px_30px_rgba(124,91,201,0.08)];
+    @apply rounded-[20px] bg-white p-5 shadow-[0_8px_30px_rgba(43,58,85,0.07)];
+  }
+  .link {
+    @apply font-semibold text-profundo underline decoration-marea decoration-2 underline-offset-4 hover:decoration-violeta;
   }
   .table {
     @apply w-full text-left text-sm;
@@ -83,8 +113,14 @@ h3 {
   .prose-page ul {
     @apply list-none pl-0;
   }
+  /* viñeta en forma de burbuja */
   .prose-page ul li::before {
-    content: "✦ ";
-    color: var(--color-lila);
+    content: "";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.5em;
+    border: 2px solid var(--color-marea);
+    border-radius: 9999px;
   }
 }

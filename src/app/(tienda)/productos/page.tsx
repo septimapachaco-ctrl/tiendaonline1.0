@@ -72,10 +72,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
             <div>
               <p className="label">Categorías</p>
               <ul className="space-y-1">
-                <li><Link href="/productos" className={!categoria ? "font-semibold text-brand" : "text-muted hover:text-ink"}>Todas</Link></li>
+                <li><Link href="/productos" className={!categoria ? "font-semibold text-profundo" : "text-muted hover:text-ink"}>Todas</Link></li>
                 {categories.map((c) => (
                   <li key={c.id}>
-                    <Link href={`/productos?categoria=${c.slug}`} className={categoria === c.slug ? "font-semibold text-brand" : "text-muted hover:text-ink"}>
+                    <Link href={`/productos?categoria=${c.slug}`} className={categoria === c.slug ? "font-semibold text-profundo" : "text-muted hover:text-ink"}>
                       {c.name}
                     </Link>
                   </li>

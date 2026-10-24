@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Delfina } from "@/components/Logo";
 import { ProductCard } from "@/components/ProductCard";
+import { Olas } from "@/components/Olas";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +11,8 @@ const productInclude = {
   variants: { select: { stock: true } },
 };
 
-const CATEGORY_COLORS = ["bg-rosa", "bg-menta", "bg-cielo", "bg-hada"];
+// bases suaves de la paleta; Rosa Concha y Violeta Coral quedan como acento
+const CATEGORY_COLORS = ["bg-aqua/70", "bg-arena", "bg-marea/50", "bg-aqua/40"];
 
 export default async function HomePage() {
   const [featured, latest, categories] = await Promise.all([
@@ -21,73 +24,63 @@ export default async function HomePage() {
   return (
     <>
       <section className="bg-firma relative overflow-hidden">
-        <Stars />
-        <div className="container-page relative grid items-center gap-10 py-16 md:grid-cols-2 md:py-24">
+        <div className="container-page relative grid items-center gap-8 py-14 md:grid-cols-[1.1fr_0.9fr] md:py-20">
           <div>
-            <p className="font-hand text-2xl text-brand-dark">Para los primeros pasos y los primeros sueños</p>
-            <h1 className="mt-2 text-[32px] md:text-[40px]">Bienvenida al país donde los unicornios cuidan a los más pequeños</h1>
+            <p className="font-hand text-2xl text-profundo">Para los primeros pasos y los primeros chapuzones</p>
+            <h1 className="mt-2 text-[32px] md:text-[40px]">Bienvenida al mar donde Delfina cuida a los más pequeños</h1>
             <p className="mt-4 max-w-md text-lg">
-              Ropa, juguetes y rincones llenos de ternura, elegidos para que cada día tenga un poco de magia.
+              Ropa, juguetes y rincones serenos, elegidos para que cada día tenga la calma del mar.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/productos" className="btn">Descubrir la tienda</Link>
-              <Link href="/nosotros" className="btn-outline">Nuestra historia</Link>
+              <Link href="/productos" className="btn">Explorar la tienda</Link>
+              <Link href="/nosotros" className="btn-outline">Conocé a Delfina</Link>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {categories.slice(0, 4).map((c, i) => (
-              <Link
-                key={c.id}
-                href={`/productos?categoria=${c.slug}`}
-                className={`${CATEGORY_COLORS[i % 4]} flex aspect-square items-end rounded-[48px] p-5 font-display text-2xl font-bold text-ink shadow-[0_8px_30px_rgba(124,91,201,0.12)] transition hover:-translate-y-1`}
-              >
-                <span>✦ {c.name}</span>
-              </Link>
-            ))}
-          </div>
+          <Delfina className="mx-auto h-56 w-56 md:h-80 md:w-80" />
+        </div>
+        <Olas className="text-espuma" />
+      </section>
+
+      <section className="container-page py-10">
+        <h2 className="mb-5 text-[28px]">Explorá el fondo del mar</h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {categories.slice(0, 4).map((c, i) => (
+            <Link
+              key={c.id}
+              href={`/productos?categoria=${c.slug}`}
+              className={`${CATEGORY_COLORS[i % 4]} flex aspect-[4/3] items-end rounded-[24px] p-5 font-display text-2xl font-bold text-profundo transition hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(43,58,85,0.1)]`}
+            >
+              {c.name}
+            </Link>
+          ))}
         </div>
       </section>
 
-      <section className="container-page grid gap-4 py-10 sm:grid-cols-3">
+      <section className="container-page grid gap-4 pb-6 sm:grid-cols-3">
         {[
           ["Pagás como te quede cómodo", "Tarjetas, débito, dinero en cuenta y cuotas con Mercado Pago"],
-          ["Magia que viaja", "Envíos a todo el país o retiro en nuestro local"],
-          ["Elegido con cuidado", "Materiales suaves y seguros para los más pequeños"],
+          ["Del mar a tu casa", "Envíos a todo el país o retiro en nuestro local"],
+          ["Elegido con calma", "Materiales suaves y seguros para los más pequeños"],
         ].map(([t, d]) => (
           <div key={t} className="card">
-            <p className="font-display text-lg font-semibold">✦ {t}</p>
+            <p className="font-display text-lg font-semibold">{t}</p>
             <p className="text-muted">{d}</p>
           </div>
         ))}
       </section>
 
-      {featured.length > 0 && <Grid title="Tesoros destacados" products={featured} />}
-      <Grid title="Recién llegados al bosque" products={latest} />
+      {featured.length > 0 && <Grid title="Tesoros del fondo del mar" products={featured} />}
+      <Grid title="Recién llegados a la orilla" products={latest} />
     </>
-  );
-}
-
-function Stars() {
-  const stars = [
-    ["8%", "18%", 18], ["22%", "70%", 12], ["48%", "10%", 14], ["62%", "82%", 20], ["88%", "28%", 16], ["92%", "70%", 10],
-  ] as const;
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-      {stars.map(([left, top, size], i) => (
-        <svg key={i} viewBox="0 0 24 24" width={size} height={size} className="absolute" style={{ left, top }}>
-          <path d="M12 0c.8 5.6 4.4 9.2 12 12-7.6 2.8-11.2 6.4-12 12-.8-5.6-4.4-9.2-12-12 7.6-2.8 11.2-6.4 12-12z" fill="#FFE9A8" />
-        </svg>
-      ))}
-    </div>
   );
 }
 
 function Grid({ title, products }: { title: string; products: Parameters<typeof ProductCard>[0]["product"][] }) {
   return (
     <section className="container-page py-10">
-      <div className="mb-6 flex items-end justify-between">
+      <div className="mb-6 flex items-end justify-between gap-4">
         <h2 className="text-[28px]">{title}</h2>
-        <Link href="/productos" className="font-semibold text-brand hover:underline">Ver todo ✦</Link>
+        <Link href="/productos" className="link shrink-0">Ver todo</Link>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
         {products.map((p) => <ProductCard key={p.slug} product={p} />)}

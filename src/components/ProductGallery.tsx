@@ -19,7 +19,7 @@ export function ProductGallery({ images, name }: { images: string[]; name: strin
             <button
               key={src + i}
               onClick={() => setActive(i)}
-              className={`aspect-square overflow-hidden rounded-2xl border-2 ${i === active ? "border-lila" : "border-transparent"}`}
+              className={`aspect-square overflow-hidden rounded-2xl border-2 ${i === active ? "border-marea" : "border-transparent"}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt={`${name} ${i + 1}`} className="h-full w-full object-cover" />

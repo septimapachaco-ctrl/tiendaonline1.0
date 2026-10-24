@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCart } from "@/components/CartProvider";
+import { Delfina } from "@/components/Logo";
 import { money } from "@/lib/format";
 
 export default function CartPage() {
@@ -12,7 +13,8 @@ export default function CartPage() {
   if (cart.items.length === 0) {
     return (
       <div className="container-page py-20 text-center">
-        <h1 className="text-[28px]">Tu carrito todavía no tiene magia</h1>
+        <Delfina className="mx-auto mb-6 h-36 w-36" />
+        <h1 className="text-[28px]">Tu canasta está vacía, como una playa al amanecer</h1>
         <Link href="/productos" className="btn mt-6">Descubrir la tienda</Link>
       </div>
     );
@@ -20,17 +22,17 @@ export default function CartPage() {
 
   return (
     <div className="container-page py-10">
-      <h1 className="text-[40px]">Tu carrito</h1>
+      <h1 className="text-[40px]">Tu canasta</h1>
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
         <ul className="card divide-y divide-line py-1">
           {cart.items.map((item) => (
             <li key={item.variantId} className="flex gap-4 py-4">
-              <div className="h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-crema">
+              <div className="h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-espuma">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {item.image && <img src={item.image} alt={item.productName} className="h-full w-full object-cover" />}
               </div>
               <div className="flex flex-1 flex-col">
-                <Link href={`/productos/${item.slug}`} className="font-medium hover:text-brand">{item.productName}</Link>
+                <Link href={`/productos/${item.slug}`} className="font-medium hover:underline decoration-marea decoration-2 underline-offset-4">{item.productName}</Link>
                 <p className="text-sm text-muted">{item.variantName}</p>
                 <div className="mt-auto flex items-center justify-between">
                   <div className="flex items-center rounded-md border border-line text-sm">

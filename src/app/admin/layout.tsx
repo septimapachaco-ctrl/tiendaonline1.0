@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-soft md:flex">
       <aside className="border-b border-line bg-white md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:border-r md:border-b-0">
         <div className="flex items-center justify-between p-4 md:block">
-          <Link href="/admin" className="font-bold text-brand">{site.name} · Panel</Link>
+          <Link href="/admin" className="font-bold text-profundo">{site.name} · Panel</Link>
           <Link href="/" className="text-xs text-muted underline md:mt-1 md:block">Ver tienda</Link>
         </div>
         <nav className="flex gap-1 overflow-x-auto px-2 pb-2 text-sm md:flex-col md:pb-0">

@@ -33,7 +33,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
         </ActionForm>
       </div>
       <p className="mt-4 text-center text-sm">
-        ¿Ya tenés cuenta? <Link href="/login" className="text-brand underline">Ingresá</Link>
+        ¿Ya tenés cuenta? <Link href="/login" className="text-profundo underline">Ingresá</Link>
       </p>
     </div>
   );
