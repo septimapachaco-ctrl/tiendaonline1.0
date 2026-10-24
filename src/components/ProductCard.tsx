@@ -13,9 +13,13 @@ export type CardProduct = {
 export function ProductCard({ product }: { product: CardProduct }) {
   const soldOut = product.variants.every((v) => v.stock <= 0);
   const image = product.images[0]?.url;
+  const onSale = !soldOut && product.comparePrice != null && product.comparePrice > product.price;
   return (
-    <Link href={`/productos/${product.slug}`} className="group block">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-soft">
+    <Link
+      href={`/productos/${product.slug}`}
+      className="group block rounded-[20px] bg-white p-2 shadow-[0_8px_30px_rgba(124,91,201,0.08)] transition hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(124,91,201,0.16)]"
+    >
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-crema">
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -28,23 +32,23 @@ export function ProductCard({ product }: { product: CardProduct }) {
           <div className="flex h-full items-center justify-center text-sm text-muted">Sin foto</div>
         )}
         {soldOut && (
-          <span className="absolute top-2 left-2 rounded bg-ink px-2 py-0.5 text-xs font-semibold text-white">
-            Sin stock
+          <span className="absolute top-2 left-2 rounded-full bg-white px-3 py-0.5 text-xs font-semibold text-ink">
+            Agotado por ahora
           </span>
         )}
-        {!soldOut && product.comparePrice && product.comparePrice > product.price && (
-          <span className="absolute top-2 left-2 rounded bg-accent px-2 py-0.5 text-xs font-semibold text-white">
-            -{Math.round(100 - (product.price / product.comparePrice) * 100)}%
+        {onSale && (
+          <span className="absolute top-2 left-2 rounded-full bg-hada px-3 py-0.5 text-xs font-semibold text-ink">
+            ✦ {Math.round(100 - (product.price / product.comparePrice!) * 100)}% menos
           </span>
         )}
       </div>
-      <h3 className="mt-3 text-sm font-medium group-hover:text-brand">{product.name}</h3>
-      <p className="mt-1 text-sm">
-        <span className="font-semibold">{money(product.price)}</span>
-        {product.comparePrice && product.comparePrice > product.price && (
-          <span className="ml-2 text-muted line-through">{money(product.comparePrice)}</span>
-        )}
-      </p>
+      <div className="px-2 pt-3 pb-2">
+        <h3 className="font-display text-lg leading-snug font-semibold group-hover:text-brand">{product.name}</h3>
+        <p className="mt-1">
+          <span className="font-semibold">{money(product.price)}</span>
+          {onSale && <span className="ml-2 text-sm text-muted line-through">{money(product.comparePrice!)}</span>}
+        </p>
+      </div>
     </Link>
   );
 }

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
   const products = await db.product.findMany({
-    where: q ? { name: { contains: q } } : {},
+    where: q ? { name: { contains: q, mode: "insensitive" } } : {},
     include: { variants: true, category: true, images: { take: 1, orderBy: { sortOrder: "asc" } } },
     orderBy: { createdAt: "desc" },
   });

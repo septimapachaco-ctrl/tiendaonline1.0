@@ -14,7 +14,7 @@ export default async function CheckoutPage() {
 
   return (
     <div className="container-page py-10">
-      <h1 className="text-3xl font-bold">Finalizar compra</h1>
+      <h1 className="text-[40px]">Finalizar compra</h1>
       <CheckoutForm
         zones={zones.map((z) => ({ id: z.id, name: z.name, price: z.price, isPickup: z.isPickup }))}
         defaults={{

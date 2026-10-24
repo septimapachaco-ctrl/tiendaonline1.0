@@ -11,7 +11,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
   return (
     <div className="container-page grid max-w-4xl gap-10 py-12 md:grid-cols-2">
       <div>
-        <h1 className="text-3xl font-bold">{regret ? "Botón de arrepentimiento" : "Contacto"}</h1>
+        <h1 className="text-[40px]">{regret ? "Botón de arrepentimiento" : "Contacto"}</h1>
         <p className="mt-4 text-muted">
           {regret
             ? "Indicá tu número de pedido para revocar la compra (10 días corridos desde la entrega). Te confirmamos por email."

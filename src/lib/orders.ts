@@ -113,7 +113,7 @@ export async function applyPayment(orderId: string, info: PaymentInfo) {
   if (approved && !wasPaid) {
     const refreshed = await db.order.findUnique({ where: { id: order.id }, include: { items: true } });
     if (refreshed) {
-      await sendMail(refreshed.email, `¡Recibimos tu pago! Pedido #${refreshed.number}`, orderEmailHtml(refreshed));
+      await sendMail(refreshed.email, `Tu pedido #${refreshed.number} ya está galopando hacia vos`, orderEmailHtml(refreshed));
       if (process.env.ADMIN_NOTIFY_EMAIL) {
         await sendMail(
           process.env.ADMIN_NOTIFY_EMAIL,
@@ -148,10 +148,10 @@ export function orderEmailHtml(order: OrderForEmail, intro?: string) {
     )
     .join("");
   return `
-  <div style="font-family:Arial,sans-serif;max-width:560px">
-    <h2>${site.name}</h2>
+  <div style="font-family:Nunito,Arial,sans-serif;max-width:560px;background:#FFF9F4;color:#4A4458;padding:24px;border-radius:20px">
+    <h2 style="color:#7C5BC9">✦ ${site.name}</h2>
     <p>Hola ${order.name},</p>
-    <p>${intro ?? `¡Gracias por tu compra! Tu pedido <b>#${order.number}</b> está confirmado.`}</p>
+    <p>${intro ?? `Gracias por elegirnos. Tu pedido <b>#${order.number}</b> está confirmado y ya lo estamos preparando con mucho cuidado.`}</p>
     <p>Estado: <b>${ORDER_STATUS[order.status] ?? order.status}</b></p>
     ${order.trackingCode ? `<p>Código de seguimiento: <b>${order.trackingCode}</b></p>` : ""}
     <table width="100%" cellpadding="6" style="border-collapse:collapse">
@@ -161,6 +161,7 @@ export function orderEmailHtml(order: OrderForEmail, intro?: string) {
       <tr><td>${order.shippingName}</td><td align="right">${money(order.shippingCost)}</td></tr>
       <tr><td><b>Total</b></td><td align="right"><b>${money(order.total)}</b></td></tr>
     </table>
-    <p><a href="${site.url}/cuenta">Ver mis pedidos</a></p>
+    <p><a href="${site.url}/cuenta" style="color:#7C5BC9">Ver mis pedidos</a></p>
+    <p style="font-family:Caveat,cursive;font-size:20px">Hecho con magia</p>
   </div>`;
 }

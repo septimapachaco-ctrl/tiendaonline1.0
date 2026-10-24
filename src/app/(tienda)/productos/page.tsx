@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { ProductCard } from "@/components/ProductCard";
 import { db } from "@/lib/db";
+import { slugify } from "@/lib/format";
 
 type SP = Promise<Record<string, string | undefined>>;
 
@@ -25,7 +26,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
   };
   const where: Prisma.ProductWhereInput = {
     active: true,
-    ...(q ? { OR: [{ name: { contains: q } }, { description: { contains: q } }] } : {}),
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { description: { contains: q, mode: "insensitive" } },
+            // el slug no tiene tildes: "arcoiris" encuentra "Arcoíris"
+            ...(slugify(q) ? [{ slug: { contains: slugify(q) } }] : []),
+          ],
+        }
+      : {}),
     ...(categoria ? { category: { slug: categoria } } : {}),
     ...(talle || color ? { variants: { some: variantFilter } } : {}),
     ...(min || max ? { price: { ...(min ? { gte: Number(min) } : {}), ...(max ? { lte: Number(max) } : {}) } } : {}),
@@ -48,7 +58,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
 
   return (
     <div className="container-page py-10">
-      <h1 className="text-3xl font-bold">{current?.name ?? (q ? `Resultados para “${q}”` : "Todos los productos")}</h1>
+      <h1 className="text-[40px]">{current?.name ?? (q ? `Resultados para “${q}”` : "Todos los productos")}</h1>
       <p className="mt-1 text-sm text-muted">{products.length} productos</p>
 
       <div className="mt-8 grid gap-8 md:grid-cols-[220px_1fr]">

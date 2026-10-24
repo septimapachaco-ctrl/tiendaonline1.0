@@ -9,7 +9,7 @@ export default async function ShippingPage() {
   const zones = await db.shippingZone.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } });
   return (
     <div className="container-page prose-page max-w-3xl py-12">
-      <h1 className="text-3xl font-bold">Envíos y retiros</h1>
+      <h1 className="text-[40px]">Envíos y retiros</h1>
       <p className="mt-4">Despachamos los pedidos dentro de las 48 h hábiles posteriores a la acreditación del pago.</p>
       <h2>Costos por zona</h2>
       <table className="table not-prose mb-6">

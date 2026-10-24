@@ -83,7 +83,7 @@ export function CheckoutForm({ zones, defaults, loggedIn }: { zones: Zone[]; def
           {zones.length === 0 && <p className="text-sm text-red-700">No hay formas de entrega configuradas.</p>}
           <div className="space-y-2">
             {zones.map((z) => (
-              <label key={z.id} className={`flex cursor-pointer items-center justify-between rounded-md border p-3 text-sm ${zoneId === z.id ? "border-brand bg-brand/5" : "border-line"}`}>
+              <label key={z.id} className={`flex min-h-11 cursor-pointer items-center justify-between rounded-2xl border-2 p-3 text-sm ${zoneId === z.id ? "border-lila bg-lila/10" : "border-line"}`}>
                 <span className="flex items-center gap-2">
                   <input type="radio" name="zone" checked={zoneId === z.id} onChange={() => setZoneId(z.id)} />
                   {z.isPickup ? `Retiro en ${z.name}` : `Envío a ${z.name}`}
@@ -133,7 +133,7 @@ export function CheckoutForm({ zones, defaults, loggedIn }: { zones: Zone[]; def
         </div>
         {error && <p className="rounded bg-red-50 p-3 text-red-800">{error}</p>}
         <button className="btn w-full" disabled={pending || !zone}>
-          {pending ? "Procesando…" : "Pagar con Mercado Pago"}
+          {pending ? "Preparando tu pedido…" : "Pagar con Mercado Pago"}
         </button>
         <p className="text-center text-xs text-muted">
           Vas a ser redirigido a Mercado Pago para pagar con tarjeta, débito o dinero en cuenta.
