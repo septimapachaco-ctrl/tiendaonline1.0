@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Términos y condiciones", alternates
 export default function TermsPage() {
   return (
     <div className="container-page prose-page max-w-3xl py-12">
-      <h1 className="text-3xl font-bold">Términos y condiciones</h1>
+      <h1 className="text-[40px]">Términos y condiciones</h1>
       <p className="mt-4 text-sm text-muted">Texto modelo: revisalo con tu asesor legal antes de publicar.</p>
       <h2>1. Generalidades</h2>
       <p>El uso de este sitio implica la aceptación de estos términos. {site.name} puede modificarlos en cualquier momento.</p>

@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: { params: Params }) {
       <div className="grid gap-10 md:grid-cols-2">
         <ProductGallery images={product.images.map((i) => i.url)} name={product.name} />
         <div>
-          <h1 className="text-3xl font-bold">{product.name}</h1>
+          <h1 className="text-[40px]">{product.name}</h1>
           {product.comparePrice && product.comparePrice > product.price && (
             <p className="mt-2 text-muted line-through">{money(product.comparePrice)}</p>
           )}

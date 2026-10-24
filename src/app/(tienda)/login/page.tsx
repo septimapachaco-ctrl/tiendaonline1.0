@@ -9,7 +9,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { next } = await searchParams;
   return (
     <div className="container-page max-w-md py-16">
-      <h1 className="text-3xl font-bold">Ingresar</h1>
+      <h1 className="text-[40px]">Ingresar</h1>
       <div className="card mt-6">
         <ActionForm action={login} submitLabel="Ingresar">
           <input type="hidden" name="next" value={next ?? ""} />

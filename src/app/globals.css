@@ -1,43 +1,68 @@
 @import "tailwindcss";
 
-/* Colores de marca: cambiar estos valores adapta toda la tienda */
+/* Paleta del manual de marca "Mi Pequeño Pony" */
 @theme {
-  --color-brand: #1f3a5f;
-  --color-brand-dark: #142740;
-  --color-accent: #e07a3f;
-  --color-ink: #1d1d1f;
-  --color-muted: #6b7280;
-  --color-line: #e5e7eb;
-  --color-soft: #f6f5f2;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-lila: #b79ced; /* Lila Unicornio: marca, detalles, logotipo */
+  --color-brand: #7c5bc9; /* Lila profundo: botones con texto blanco (contraste AA) */
+  --color-brand-dark: #6446ad;
+  --color-rosa: #ffc2d9; /* Rosa Nube */
+  --color-menta: #a8e6cf; /* Menta Sueño */
+  --color-hada: #ffe9a8; /* Amarillo Polvo de Hada */
+  --color-cielo: #bde0fe; /* Cielo Bebé */
+  --color-crema: #fff9f4; /* Crema Algodón: fondo principal */
+  --color-ink: #4a4458; /* Gris Cuento: texto principal */
+  --color-muted: #6e6780;
+  --color-coral: #ff9e9e; /* Coral Suave: alertas amables */
+  --color-line: #ede4f7;
+  --color-soft: #fff9f4;
+  --color-accent: #7c5bc9;
+}
+
+@theme inline {
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-baloo), var(--font-nunito), ui-sans-serif, sans-serif;
+  --font-hand: var(--font-caveat), cursive;
 }
 
 body {
-  background: #fff;
+  background: var(--color-crema);
   color: var(--color-ink);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 @layer components {
   .container-page {
     @apply mx-auto w-full max-w-6xl px-4;
   }
+  /* degradado firma: Lila → Rosa Nube → Cielo Bebé */
+  .bg-firma {
+    background: linear-gradient(135deg, #e4d8fa 0%, #ffd9e7 50%, #d7ecff 100%);
+  }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-3xl bg-brand px-6 py-2.5 text-base font-semibold text-white transition hover:bg-rosa hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-brand disabled:hover:text-white;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-md border border-line bg-white px-4 py-2 text-sm font-medium text-ink transition hover:border-ink;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-3xl border-2 border-lila bg-white px-5 py-2 text-sm font-semibold text-ink transition hover:bg-rosa/40;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50;
+    @apply inline-flex min-h-11 items-center justify-center rounded-3xl px-3 py-1.5 text-sm font-semibold text-red-800 hover:bg-coral/30;
   }
   .input {
-    @apply w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20;
+    @apply min-h-11 w-full rounded-2xl border border-line bg-white px-4 py-2 text-base outline-none focus:border-lila focus:ring-4 focus:ring-lila/25;
   }
   .label {
-    @apply mb-1 block text-sm font-medium;
+    @apply mb-1 block text-sm font-semibold;
   }
   .card {
-    @apply rounded-lg border border-line bg-white p-5;
+    @apply rounded-[20px] bg-white p-5 shadow-[0_8px_30px_rgba(124,91,201,0.08)];
   }
   .table {
     @apply w-full text-left text-sm;
@@ -49,13 +74,17 @@ body {
     @apply border-b border-line px-3 py-2.5 align-top;
   }
   .prose-page h2 {
-    @apply mt-8 mb-2 text-xl font-semibold;
+    @apply mt-8 mb-2 text-[28px];
   }
   .prose-page p,
   .prose-page li {
-    @apply mb-3 leading-relaxed text-ink/85;
+    @apply mb-3 leading-relaxed;
   }
   .prose-page ul {
-    @apply list-disc pl-5;
+    @apply list-none pl-0;
+  }
+  .prose-page ul li::before {
+    content: "✦ ";
+    color: var(--color-lila);
   }
 }

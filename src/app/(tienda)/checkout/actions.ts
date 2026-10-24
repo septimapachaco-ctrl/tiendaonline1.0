@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { getSession } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createPreference, mpEnabled } from "@/lib/mercadopago";
 import {
@@ -75,13 +75,14 @@ export async function placeOrder(input: z.input<typeof checkoutSchema>, lines: C
     couponId = coupon.id;
   }
 
-  const session = await getSession();
+  // se valida contra la base: una sesión vieja puede apuntar a un usuario que ya no existe
+  const user = await getCurrentUser();
   const total = subtotal - discount + zone.price;
 
   const order = await db.order.create({
     data: {
       number: await nextOrderNumber(),
-      userId: session?.userId ?? null,
+      userId: user?.id ?? null,
       email: data.email.toLowerCase(),
       name: data.name,
       phone: data.phone,
@@ -109,11 +110,11 @@ export async function placeOrder(input: z.input<typeof checkoutSchema>, lines: C
     },
   });
 
-  if (session?.userId && !zone.isPickup) {
-    const existing = await db.address.findFirst({ where: { userId: session.userId } });
+  if (user && !zone.isPickup) {
+    const existing = await db.address.findFirst({ where: { userId: user.id } });
     const address = { street: data.street!, city: data.city!, province: data.province!, zip: data.zip! };
     if (existing) await db.address.update({ where: { id: existing.id }, data: address });
-    else await db.address.create({ data: { ...address, userId: session.userId } });
+    else await db.address.create({ data: { ...address, userId: user.id } });
   }
 
   if (demoPayments) {

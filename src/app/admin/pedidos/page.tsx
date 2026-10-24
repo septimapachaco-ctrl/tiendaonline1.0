@@ -12,7 +12,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
   const where: Prisma.OrderWhereInput = {
     ...(estado ? { status: estado } : {}),
     ...(q
-      ? { OR: [{ name: { contains: q } }, { email: { contains: q } }, ...(Number.isInteger(num) && num > 0 ? [{ number: num }] : [])] }
+      ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }, ...(Number.isInteger(num) && num > 0 ? [{ number: num }] : [])] }
       : {}),
   };
   const [orders, counts] = await Promise.all([

@@ -20,7 +20,7 @@ export default async function AccountPage() {
   return (
     <div className="container-page py-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Hola, {user.name.split(" ")[0]}</h1>
+        <h1 className="text-[40px]">Hola, {user.name.split(" ")[0]}</h1>
         <form action={logout}><button className="btn-outline">Cerrar sesión</button></form>
       </div>
 

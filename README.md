@@ -1,8 +1,10 @@
-# Tienda Online 1.0
+# Mi Pequeño Pony — Tienda Online 1.0
 
-Tienda online responsive con catálogo, carrito, cobro con **Mercado Pago Checkout Pro** y **panel de administración** para gestionar productos, stock, pedidos, clientes, cupones y usuarios.
+Tienda online de artículos para bebés y niños, responsive, con catálogo, carrito, cobro con **Mercado Pago Checkout Pro** y **panel de administración** para gestionar productos, stock, pedidos, clientes, cupones y usuarios.
 
-Stack: Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Prisma (SQLite en desarrollo, PostgreSQL en producción).
+Stack: Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Prisma · PostgreSQL y Storage en Supabase.
+
+La identidad visual sigue el manual de marca: paleta Lila Unicornio / Rosa Nube / Menta / Polvo de Hada / Cielo Bebé sobre Crema Algodón, tipografías Baloo 2 (títulos), Nunito (texto) y Caveat (acentos), degradado firma, estrellas de cuatro puntas y tono de voz cálido. Para cumplir contraste AA, los botones usan un lila más profundo (`#7C5BC9`) con texto blanco; el Lila Unicornio original (`#B79CED`) queda para el logotipo y los detalles.
 
 ## Qué incluye
 
@@ -24,11 +26,20 @@ Requisitos: Node.js 20 o superior.
 
 ```bash
 npm install
-cp .env.example .env        # completar valores
-npx prisma db push          # crea la base
-npm run db:seed             # admin inicial + datos de ejemplo
+cp .env.example .env        # completar DATABASE_URL, DIRECT_URL y el resto
+npx prisma db push          # sincroniza las tablas (en Supabase ya están creadas)
+npm run db:seed             # crea el admin (ADMIN_EMAIL/ADMIN_PASSWORD) y, si la base está vacía, el catálogo de ejemplo
 npm run dev
 ```
+
+## Base de datos y fotos en Supabase
+
+Proyecto: `tienda-mi-pequeno-pony` (región São Paulo, `sa-east-1`). Ya tiene creadas las tablas, el catálogo de ejemplo (12 productos, 5 categorías, 4 zonas de envío, cupón `BIENVENIDA10`) y el bucket público `productos` para las fotos.
+
+- **Conexión:** en Supabase → *Connect* → *ORMs* → *Prisma* están las dos URLs. `DATABASE_URL` usa el pooler (puerto 6543, con `pgbouncer=true`) y `DIRECT_URL` la conexión directa (puerto 5432). La contraseña es la de la base; si no la tenés, se resetea en *Project Settings → Database*.
+- **Fotos:** `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` (*Project Settings → API*). La service role key es secreta: solo va en el servidor/Vercel, nunca en variables `NEXT_PUBLIC_*`.
+- **Seguridad:** todas las tablas tienen RLS activado sin políticas. La app accede con Prisma (rol `postgres`), y la API pública de Supabase (clave anon) no puede leer ni escribir datos. Supabase muestra un aviso informativo "RLS enabled, no policy": es intencional.
+- **Administrador:** no se creó en la base. Corré `npm run db:seed` con `ADMIN_EMAIL` y `ADMIN_PASSWORD` apuntando a Supabase para crearlo.
 
 - Tienda: http://localhost:3000
 - Panel: http://localhost:3000/admin con `ADMIN_EMAIL` / `ADMIN_PASSWORD` del `.env`.
@@ -53,13 +64,13 @@ Configurar SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`
 
 ## Publicación (producción)
 
-1. Crear una base PostgreSQL (Neon, Supabase, Railway, etc.).
-2. En `prisma/schema.prisma` cambiar `provider = "sqlite"` por `provider = "postgresql"` y poner la URL en `DATABASE_URL`.
+1. Importar el repositorio en Vercel (vercel.com/new).
+2. Cargar `DATABASE_URL` y `DIRECT_URL` de Supabase.
 3. Definir todas las variables de `.env.example` en el hosting, con `NEXT_PUBLIC_SITE_URL` = dominio final con `https://` y un `AUTH_SECRET` largo y aleatorio (`openssl rand -base64 32`).
-4. Ejecutar `npx prisma db push` y `npm run db:seed` contra la base de producción (cambiar luego la contraseña del admin desde *Mi cuenta*).
+4. Ejecutar `npm run db:seed` contra Supabase para crear el administrador (cambiar luego la contraseña desde *Mi cuenta*).
 5. `npm run build` y `npm start` (o desplegar en Vercel / un VPS con Node).
 
-**Imágenes:** las fotos subidas desde el panel se guardan en `public/uploads`, lo que requiere disco persistente (VPS, Railway con volumen). En hosting sin disco (Vercel) cargar las fotos por URL desde un servicio de imágenes (Cloudinary, S3, etc.).
+**Imágenes:** con `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` las fotos subidas desde el panel van al bucket `productos` de Supabase Storage (funciona en Vercel). Sin esas variables se guardan en `public/uploads`, que solo sirve con disco persistente. Las fotos del catálogo de ejemplo son marcadores de color: reemplazarlas por las reales.
 
 El certificado SSL lo provee el hosting (Vercel, Cloudflare o Let's Encrypt en un VPS).
 
@@ -72,7 +83,8 @@ El certificado SSL lo provee el hosting (Vercel, Cloudflare o Let's Encrypt en u
 ## Personalización de marca
 
 - Nombre, WhatsApp y URL: variables `NEXT_PUBLIC_*`.
-- Colores: bloque `@theme` en `src/app/globals.css`.
+- Colores: bloque `@theme` en `src/app/globals.css`. Tipografías: `src/app/layout.tsx`. Logo (isotipo SVG): `src/components/Logo.tsx`. Favicon: `src/app/icon.svg`.
+- Catálogo de ejemplo: `prisma/catalog.ts`.
 - Textos institucionales: `src/app/(tienda)/nosotros`, `envios`, `terminos`.
 
 ## Estructura

@@ -1,8 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { Baloo_2, Caveat, Nunito } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@/components/Analytics";
 import { CartProvider } from "@/components/CartProvider";
 import { site } from "@/lib/site";
+
+const baloo = Baloo_2({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-baloo" });
+const nunito = Nunito({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-nunito" });
+const caveat = Caveat({ subsets: ["latin"], weight: ["500"], variable: "--font-caveat" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -14,12 +19,12 @@ export const metadata: Metadata = {
     : undefined,
 };
 
-export const viewport: Viewport = { themeColor: "#1f3a5f" };
+export const viewport: Viewport = { themeColor: "#B79CED" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-AR">
-      <body className="min-h-screen antialiased">
+    <html lang="es-AR" className={`${baloo.variable} ${nunito.variable} ${caveat.variable}`}>
+      <body className="min-h-screen font-sans antialiased">
         <CartProvider>{children}</CartProvider>
         <Analytics />
       </body>

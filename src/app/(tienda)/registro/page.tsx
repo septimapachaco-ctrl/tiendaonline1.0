@@ -9,7 +9,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const { next } = await searchParams;
   return (
     <div className="container-page max-w-md py-16">
-      <h1 className="text-3xl font-bold">Crear cuenta</h1>
+      <h1 className="text-[40px]">Crear cuenta</h1>
       <p className="mt-2 text-sm text-muted">Seguí tus pedidos y comprá más rápido la próxima vez.</p>
       <div className="card mt-6">
         <ActionForm action={register} submitLabel="Crear cuenta">

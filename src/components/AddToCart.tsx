@@ -45,7 +45,7 @@ export function AddToCart({ product, variants }: Props) {
 
   return (
     <div className="space-y-5">
-      <p className="text-2xl font-semibold">{money(price)}</p>
+      <p className="text-[28px] font-semibold">{money(price)}</p>
 
       {sizes.length > 0 && (
         <Picker
@@ -67,21 +67,21 @@ export function AddToCart({ product, variants }: Props) {
       )}
 
       <div className="flex items-center gap-3">
-        <div className="flex items-center rounded-md border border-line">
+        <div className="flex items-center rounded-3xl border-2 border-line bg-white">
           <button className="px-3 py-2" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Restar">−</button>
           <span className="w-8 text-center text-sm">{qty}</span>
           <button className="px-3 py-2" onClick={() => setQty(Math.min(variant?.stock ?? 1, qty + 1))} aria-label="Sumar">+</button>
         </div>
         <button className="btn flex-1" disabled={!available} onClick={add}>
-          {available ? "Agregar al carrito" : variant ? "Sin stock" : "Combinación no disponible"}
+          {available ? "Llevar magia a casa" : variant ? "Agotado por ahora" : "Combinación no disponible"}
         </button>
       </div>
       {available && variant!.stock <= 3 && (
-        <p className="text-sm text-accent">¡Quedan solo {variant!.stock} unidades!</p>
+        <p className="text-sm text-muted">✦ Quedan {variant!.stock} unidades</p>
       )}
       {added && (
-        <p className="rounded-md bg-green-50 p-3 text-sm text-green-800">
-          Producto agregado. <Link href="/carrito" className="font-semibold underline">Ver carrito</Link>
+        <p className="rounded-2xl bg-menta/50 p-3 text-sm">
+          ✦ Ya está en tu carrito. <Link href="/carrito" className="font-semibold underline">Ver carrito</Link>
         </p>
       )}
     </div>
@@ -109,8 +109,8 @@ function Picker(props: {
           <button
             key={o}
             onClick={() => props.onChange(o)}
-            className={`min-w-11 rounded-md border px-3 py-1.5 text-sm ${
-              props.value === o ? "border-ink bg-ink text-white" : "border-line hover:border-ink"
+            className={`min-h-11 min-w-11 rounded-2xl border-2 px-3 py-1.5 text-sm ${
+              props.value === o ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-lila"
             } ${props.isAvailable(o) ? "" : "opacity-40 line-through"}`}
           >
             {o}

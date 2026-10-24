@@ -41,9 +41,9 @@ export default async function ResultPage({ searchParams }: { searchParams: SP })
   return (
     <div className="container-page max-w-xl py-16 text-center">
       {paid && <PurchaseTracker orderId={order.id} value={order.total} />}
-      <p className="text-5xl">{paid ? "🎉" : pending ? "⏳" : "⚠️"}</p>
-      <h1 className="mt-4 text-3xl font-bold">
-        {paid ? "¡Gracias por tu compra!" : pending ? "Tu pago está pendiente" : "El pago no se completó"}
+      <p className="text-5xl" aria-hidden="true">{paid ? "🦄" : pending ? "🌙" : "☁️"}</p>
+      <h1 className="mt-4 text-[40px]">
+        {paid ? "Tu pedido ya está galopando hacia vos" : pending ? "Tu pago está en camino" : "El pago no se completó"}
       </h1>
       <p className="mt-3 text-muted">
         Pedido <b>#{order.number}</b> · {money(order.total)} · Estado: {ORDER_STATUS[order.status]}
@@ -58,7 +58,7 @@ export default async function ResultPage({ searchParams }: { searchParams: SP })
           ? `Te enviamos la confirmación a ${order.email}.`
           : pending
             ? "Cuando Mercado Pago acredite el pago te avisamos por email."
-            : "Podés intentar nuevamente o escribirnos por WhatsApp."}
+            : "No se realizó ningún cobro. Podés intentarlo de nuevo cuando quieras o escribirnos por WhatsApp."}
       </p>
       <div className="mt-8 flex justify-center gap-3">
         <Link href="/productos" className="btn">Seguir comprando</Link>
@@ -71,7 +71,7 @@ export default async function ResultPage({ searchParams }: { searchParams: SP })
 function Message({ title }: { title: string }) {
   return (
     <div className="container-page py-20 text-center">
-      <h1 className="text-2xl font-bold">{title}</h1>
+      <h1 className="text-[28px]">{title}</h1>
       <Link href="/" className="btn mt-6">Volver al inicio</Link>
     </div>
   );

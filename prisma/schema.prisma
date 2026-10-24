@@ -1,13 +1,15 @@
-// Esquema de datos de la tienda.
-// Desarrollo con SQLite; para producción cambiar provider a "postgresql".
+// Esquema de datos de la tienda (PostgreSQL en Supabase).
+// DATABASE_URL: conexión con pooler (puerto 6543) para la app.
+// DIRECT_URL: conexión directa (puerto 5432) para crear/actualizar tablas.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // role: CUSTOMER | STAFF | ADMIN

@@ -12,20 +12,20 @@ export default function CartPage() {
   if (cart.items.length === 0) {
     return (
       <div className="container-page py-20 text-center">
-        <h1 className="text-2xl font-bold">Tu carrito está vacío</h1>
-        <Link href="/productos" className="btn mt-6">Ver productos</Link>
+        <h1 className="text-[28px]">Tu carrito todavía no tiene magia</h1>
+        <Link href="/productos" className="btn mt-6">Descubrir la tienda</Link>
       </div>
     );
   }
 
   return (
     <div className="container-page py-10">
-      <h1 className="text-3xl font-bold">Carrito</h1>
+      <h1 className="text-[40px]">Tu carrito</h1>
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
-        <ul className="divide-y divide-line border-y border-line">
+        <ul className="card divide-y divide-line py-1">
           {cart.items.map((item) => (
             <li key={item.variantId} className="flex gap-4 py-4">
-              <div className="h-24 w-20 shrink-0 overflow-hidden rounded bg-soft">
+              <div className="h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-crema">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {item.image && <img src={item.image} alt={item.productName} className="h-full w-full object-cover" />}
               </div>
@@ -51,7 +51,7 @@ export default function CartPage() {
             <span className="font-semibold">{money(cart.subtotal)}</span>
           </div>
           <p className="text-sm text-muted">El envío y los cupones se calculan en el siguiente paso.</p>
-          <Link href="/checkout" className="btn w-full">Iniciar compra</Link>
+          <Link href="/checkout" className="btn w-full">Continuar la compra</Link>
           <Link href="/productos" className="block text-center text-sm text-muted underline">Seguir comprando</Link>
         </aside>
       </div>
