@@ -161,7 +161,10 @@ export function orderEmailHtml(order: OrderForEmail, intro?: string) {
       <tr><td>${order.shippingName}</td><td align="right">${money(order.shippingCost)}</td></tr>
       <tr><td><b>Total</b></td><td align="right"><b>${money(order.total)}</b></td></tr>
     </table>
-    <p><a href="${site.url}/cuenta" style="color:#2B3A55">Ver mis pedidos</a></p>
+    <p style="margin:24px 0">
+      <a href="${site.url}/pedido/${order.id}" style="background:#8ECAE6;color:#2B3A55;padding:12px 22px;border-radius:24px;text-decoration:none;font-weight:bold;display:inline-block">Ver el estado de mi pedido</a>
+    </p>
+    <p style="font-size:13px">Podés seguir tu pedido con este enlace, sin necesidad de crear una cuenta. Guardá este email.</p>
     <p style="font-family:Caveat,cursive;font-size:20px">Hecho con calma de mar</p>
   </div>`;
 }
