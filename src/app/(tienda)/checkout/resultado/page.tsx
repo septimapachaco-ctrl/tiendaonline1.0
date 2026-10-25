@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { money, ORDER_STATUS } from "@/lib/format";
 import { getPayment, mpEnabled } from "@/lib/mercadopago";
 import { applyPayment } from "@/lib/orders";
+import { sellerAccessToken } from "@/lib/sellers";
 import { Delfina } from "@/components/Logo";
 import { PurchaseTracker } from "./PurchaseTracker";
 
@@ -21,7 +22,10 @@ export default async function ResultPage({ searchParams }: { searchParams: SP })
   const paymentId = sp.payment_id ?? sp.collection_id;
   if (paymentId && paymentId !== "null" && mpEnabled()) {
     try {
-      const payment = await getPayment(paymentId);
+      // los pagos a vendedores del marketplace se consultan con el token del vendedor
+      const pending = await db.order.findUnique({ where: { id: orderId }, include: { seller: true } });
+      const token = pending?.seller ? ((await sellerAccessToken(pending.seller)) ?? undefined) : undefined;
+      const payment = await getPayment(paymentId, token);
       if (payment.external_reference === orderId) {
         await applyPayment(orderId, {
           status: payment.status,
@@ -35,14 +39,14 @@ export default async function ResultPage({ searchParams }: { searchParams: SP })
     }
   }
 
-  const [order, user] = await Promise.all([db.order.findUnique({ where: { id: orderId } }), getCurrentUser()]);
+  const [order, user] = await Promise.all([db.order.findUnique({ where: { id: orderId }, include: { items: true } }), getCurrentUser()]);
   if (!order) return <Message title="No encontramos el pedido" />;
 
   const paid = order.paidAt != null;
   const pending = !paid && order.status === "PENDING";
   return (
     <div className="container-page max-w-xl py-16 text-center">
-      {paid && <PurchaseTracker orderId={order.id} value={order.total} />}
+      {paid && <PurchaseTracker orderId={order.id} value={order.total} variantIds={order.items.flatMap((i) => (i.variantId ? [i.variantId] : []))} />}
       {paid ? <Delfina className="mx-auto h-40 w-40" /> : <p className="text-5xl" aria-hidden="true">{pending ? "🌙" : "🌊"}</p>}
       <h1 className="mt-4 text-[40px]">
         {paid ? "Tu pedido ya está nadando hacia vos" : pending ? "Tu pago está en camino, como una ola" : "El pago no se completó"}

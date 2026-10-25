@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
+import { db } from "@/lib/db";
 
 const TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -13,8 +14,10 @@ const TYPES: Record<string, string> = {
 
 // Sube a Supabase Storage si está configurado; si no, guarda en public/uploads (solo con disco persistente).
 export async function POST(req: NextRequest) {
+  // pueden subir fotos el equipo de la tienda y los vendedores activos del marketplace
   const session = await getSession();
-  if (!session || session.role === "CUSTOMER") {
+  const seller = session ? await db.seller.findUnique({ where: { userId: session.userId } }) : null;
+  if (!session || (session.role === "CUSTOMER" && seller?.status !== "ACTIVE")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const file = (await req.formData()).get("file");

@@ -16,7 +16,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
       : {}),
   };
   const [orders, counts] = await Promise.all([
-    db.order.findMany({ where, orderBy: { createdAt: "desc" }, take: 200, include: { _count: { select: { items: true } } } }),
+    db.order.findMany({ where, orderBy: { createdAt: "desc" }, take: 200, include: { _count: { select: { items: true } }, seller: { select: { displayName: true } } } }),
     db.order.groupBy({ by: ["status"], _count: true }),
   ]);
   const countOf = (s: string) => counts.find((c) => c.status === s)?._count ?? 0;
@@ -39,13 +39,14 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
       </form>
       <div className="card overflow-x-auto p-0">
         <table className="table">
-          <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Entrega</th><th>Estado</th><th>Pago</th><th>Total</th></tr></thead>
+          <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Vende</th><th>Entrega</th><th>Estado</th><th>Pago</th><th>Total</th></tr></thead>
           <tbody>
             {orders.map((o) => (
               <tr key={o.id}>
                 <td><Link href={`/admin/pedidos/${o.id}`} className="font-medium underline">#{o.number}</Link></td>
                 <td>{o.createdAt.toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })}</td>
                 <td>{o.name}<br /><span className="text-xs text-muted">{o.email}</span></td>
+                <td>{o.seller?.displayName ?? "Tienda"}{o.commission > 0 && <><br /><span className="text-xs text-muted">Comisión {money(o.commission)}</span></>}</td>
                 <td>{o.shippingName}</td>
                 <td><StatusBadge status={o.status} /></td>
                 <td className="text-xs">{o.paymentStatus ?? "—"}</td>

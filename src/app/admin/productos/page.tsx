@@ -9,7 +9,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
   const { q } = await searchParams;
   const products = await db.product.findMany({
     where: q ? { name: { contains: q, mode: "insensitive" } } : {},
-    include: { variants: true, category: true, images: { take: 1, orderBy: { sortOrder: "asc" } } },
+    include: { variants: true, category: true, seller: { select: { displayName: true } }, images: { take: 1, orderBy: { sortOrder: "asc" } } },
     orderBy: { createdAt: "desc" },
   });
 
@@ -27,7 +27,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
       <form action={updateStock} className="card overflow-x-auto p-0">
         <table className="table">
           <thead>
-            <tr><th></th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock por variante</th><th>Estado</th></tr>
+            <tr><th></th><th>Producto</th><th>Categoría</th><th>Vende</th><th>Precio</th><th>Stock por variante</th><th>Estado</th></tr>
           </thead>
           <tbody>
             {products.map((p) => (
@@ -38,6 +38,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
                 </td>
                 <td><Link href={`/admin/productos/${p.id}`} className="font-medium underline">{p.name}</Link></td>
                 <td>{p.category?.name ?? "—"}</td>
+                <td>{p.seller?.displayName ?? "Tienda"}</td>
                 <td>{money(p.price)}</td>
                 <td>
                   <div className="flex flex-wrap gap-2">

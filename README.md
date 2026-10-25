@@ -14,6 +14,7 @@ La identidad visual sigue el manual de marca de **Mi Pequeña Delfina**: paleta 
 | Clientes | Registro/login, historial de pedidos, datos y dirección guardados |
 | Pagos | Mercado Pago Checkout Pro (tarjetas, débito, dinero en cuenta, cuotas), webhooks con validación de firma, estados de pedido, emails de confirmación |
 | Envíos | Tarifa fija por zona y retiro en local |
+| Marketplace | Familias venden usados y artesanos sus productos; comisión automática con split de Mercado Pago, entrega en mano con código, preguntas filtradas, calificaciones y panel de vendedor en `/vender/panel` |
 | Panel `/admin` | Resumen de ventas (por período, por día, top productos, stock bajo), productos con variantes/fotos/stock, categorías, pedidos y estados con aviso por email, clientes, cupones, zonas de envío, usuarios con roles, mensajes de contacto |
 | Institucional | Nosotros, Contacto (formulario), Envíos, Términos, botón de arrepentimiento, botón flotante de WhatsApp |
 | SEO y analítica | URLs amigables, metadatos y Open Graph, datos estructurados de producto, `sitemap.xml`, `robots.txt`, Google Analytics 4, Search Console, píxel de Meta |
@@ -46,6 +47,28 @@ Proyecto: `tienda-mi-pequeno-pony` (región São Paulo, `sa-east-1`; el nombre d
 - Cupón de ejemplo: `BIENVENIDA10`.
 
 Sin `MP_ACCESS_TOKEN`, en desarrollo los pagos se aprueban automáticamente (modo demo) para poder probar todo el circuito. En producción el modo demo está apagado salvo que se defina `PAYMENTS_DEMO="true"`.
+
+## Marketplace: familias, artesanos y productores
+
+Además de los productos propios de la tienda, cualquier persona registrada puede vender:
+
+- **Familias** (`USADOS`): ropa, juguetes y artículos usados en buen estado. Comisión por defecto: **12 %**.
+- **Artesanos y productores** (`ARTESANO`): productos nuevos de producción propia. Comisión por defecto: **15 %**.
+
+Las comisiones se cambian en **Panel → Vendedores** (también se puede fijar una comisión propia por vendedor).
+
+**Cómo cobra cada parte.** Cada vendedor conecta su cuenta de Mercado Pago (OAuth). Al comprar, la preferencia se crea con el token del vendedor y `marketplace_fee` igual a la comisión: el dinero entra a la cuenta del vendedor y la comisión, a la cuenta de la tienda (split de pagos 1:1). Por eso la canasta se paga **un vendedor por vez**. La comisión se calcula sobre los productos; el envío lo paga el comprador y va completo al vendedor. Los cupones solo aplican a productos de la tienda.
+
+**Entrega.** Envío por correo (tarifa por zona, el vendedor carga el seguimiento) o **entrega en mano** en la ciudad del vendedor: el comprador recibe un código de 4 dígitos y el vendedor lo carga en su panel al entregar. Los envíos los confirma el comprador desde el enlace de su pedido, y recién ahí puede calificar.
+
+**Protección para que las ventas se hagan dentro de la página** (`src/lib/contact-filter.ts`):
+- Publicaciones, perfiles, preguntas, respuestas y calificaciones no aceptan teléfonos, emails, links, usuarios de redes ni palabras como "whatsapp", "transferencia" o "alias".
+- No hay chat libre: las preguntas son públicas y filtradas.
+- El vendedor ve los datos del comprador recién cuando el pago está aprobado.
+- La reputación (calificaciones y ventas entregadas) solo se construye con ventas dentro de la página.
+- Las reglas (`/vender/reglas`) prohíben las ventas por fuera; el administrador puede ocultar preguntas y suspender vendedores, lo que oculta su perfil y sus publicaciones.
+
+**Configuración.** En la aplicación de Mercado Pago (la misma del Access Token), cargá la **Redirect URL** `https://TU-DOMINIO/api/mercadopago/oauth` y definí `MP_CLIENT_ID` y `MP_CLIENT_SECRET`. Los tokens de los vendedores se guardan cifrados con `AUTH_SECRET` y se renuevan solos: **no cambies `AUTH_SECRET`** una vez que haya vendedores conectados (tendrían que volver a conectar Mercado Pago). Sin credenciales de Mercado Pago, en desarrollo (o con `PAYMENTS_DEMO="true"`) los vendedores pueden vender sin conectar su cuenta y los pagos se aprueban solos.
 
 ## Mercado Pago
 

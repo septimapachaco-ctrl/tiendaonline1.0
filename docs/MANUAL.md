@@ -55,6 +55,27 @@ Zonas con tarifa fija (ej. CABA, GBA, Resto del país). Marcá “Retiro” para
 - Para dar acceso, cargá nombre, email, rol y contraseña. Para quitarlo, elegí el rol “Cliente”.
 - Para cambiar tu contraseña: menú de la tienda → *Mi cuenta*.
 
+## 10. Vendedores (solo administradores)
+
+Lista de familias, artesanos y productores que venden en la página, con su conexión a Mercado Pago, publicaciones, ventas y la comisión que te dejaron.
+
+- **Comisión general:** el porcentaje que cobra la página por venta, uno para usados y otro para artesanos. Aplica a ventas nuevas.
+- **Comisión propia:** si querés darle a un vendedor un porcentaje distinto (por ejemplo, una promoción de lanzamiento), cargalo en su fila. Vacío = usa la general.
+- **Suspender:** oculta el perfil y todas sus publicaciones al instante. Usalo si alguien intenta vender por fuera de la página o publica productos prohibidos.
+
+El dinero de esas ventas entra a la cuenta de Mercado Pago de cada vendedor; tu comisión llega sola a tu cuenta. En **Resumen** ves por separado las ventas de la tienda y las comisiones del marketplace.
+
+## 11. Preguntas
+
+Todas las preguntas que los compradores hacen en las publicaciones. La página ya bloquea teléfonos, emails, links y redes; si alguna igual intenta llevar la venta afuera, tocá **Ocultar**.
+
+## Cómo funciona para los vendedores
+
+1. Se registran, entran a **Vender → Quiero vender** y completan su perfil (aceptando las reglas).
+2. Conectan su Mercado Pago desde **Perfil y cobros**. Sin eso, sus publicaciones no se muestran.
+3. Publican desde **Publicaciones** (fotos reales, estado, precio). Se publican al instante.
+4. Responden preguntas, y cuando venden reciben un email. En **Ventas** ven los datos del comprador, cargan el seguimiento del envío o, si es entrega en mano, el código de 4 dígitos que les dicta el comprador al recibir el producto.
+
 ## Preguntas frecuentes
 
 **Un cliente pagó pero el pedido sigue pendiente.** Los pagos en efectivo o en revisión pueden demorar. Cuando Mercado Pago lo acredite, el pedido cambia solo. Revisá el pago en tu cuenta de Mercado Pago con el número de pedido.

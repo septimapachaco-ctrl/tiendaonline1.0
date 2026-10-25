@@ -4,13 +4,14 @@ import { useEffect } from "react";
 import { useCart } from "@/components/CartProvider";
 import { track } from "@/lib/track";
 
-export function PurchaseTracker({ orderId, value }: { orderId: string; value: number }) {
-  const { clear, ready } = useCart();
+export function PurchaseTracker({ orderId, value, variantIds }: { orderId: string; value: number; variantIds: string[] }) {
+  const { removeMany, ready } = useCart();
 
-  // El carrito se vacía recién cuando el pago está aprobado
+  // Se quitan de la canasta solo los productos pagados (puede haber otros vendedores pendientes)
+  const ids = variantIds.join(",");
   useEffect(() => {
-    if (ready) clear();
-  }, [ready, clear]);
+    if (ready) removeMany(ids.split(","));
+  }, [ready, removeMany, ids]);
 
   useEffect(() => {
     const key = `tracked-${orderId}`;

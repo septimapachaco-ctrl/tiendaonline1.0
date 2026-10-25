@@ -8,6 +8,8 @@ export type CardProduct = {
   comparePrice: number | null;
   images: { url: string }[];
   variants: { stock: number }[];
+  condition?: string;
+  seller?: { displayName: string } | null;
 };
 
 export function ProductCard({ product }: { product: CardProduct }) {
@@ -36,6 +38,9 @@ export function ProductCard({ product }: { product: CardProduct }) {
             Agotado por ahora
           </span>
         )}
+        {product.condition && product.condition !== "NUEVO" && (
+          <span className="absolute top-2 right-2 rounded-full bg-arena px-3 py-0.5 text-xs font-semibold text-ink">Usado</span>
+        )}
         {onSale && (
           <span className="absolute top-2 left-2 rounded-full bg-concha px-3 py-0.5 text-xs font-semibold text-ink">
             {Math.round(100 - (product.price / product.comparePrice!) * 100)}% menos
@@ -48,6 +53,7 @@ export function ProductCard({ product }: { product: CardProduct }) {
           <span className="font-semibold">{money(product.price)}</span>
           {onSale && <span className="ml-2 text-sm text-muted line-through">{money(product.comparePrice!)}</span>}
         </p>
+        {product.seller && <p className="mt-0.5 truncate text-xs text-muted">Vende {product.seller.displayName}</p>}
       </div>
     </Link>
   );

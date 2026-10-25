@@ -8,7 +8,7 @@ import { updateOrder } from "../../actions";
 
 export default async function AdminOrder({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const order = await db.order.findUnique({ where: { id }, include: { items: true, coupon: true } });
+  const order = await db.order.findUnique({ where: { id }, include: { items: true, coupon: true, seller: true } });
   if (!order) notFound();
 
   return (
@@ -56,6 +56,12 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
             </div>
             <div className="card text-sm">
               <p className="mb-2 font-semibold">Pago</p>
+              {order.seller && (
+                <p className="mb-2 rounded bg-soft p-2">
+                  Vende: <b>{order.seller.displayName}</b> · Comisión {order.commissionPct} %: <b>{money(order.commission)}</b>
+                  <br />El cobro entra a la cuenta de Mercado Pago del vendedor; la comisión, a la tuya.
+                </p>
+              )}
               <p>Estado MP: {order.paymentStatus ?? "sin pago"}</p>
               <p>ID de pago: {order.paymentId ?? "—"}</p>
               <p>Medio: {order.paymentMethod ?? "—"} {order.installments ? `· ${order.installments} cuota(s)` : ""}</p>
