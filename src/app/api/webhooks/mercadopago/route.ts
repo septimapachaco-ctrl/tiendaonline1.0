@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getPayment, mpEnabled, validWebhookSignature } from "@/lib/mercadopago";
+import { db } from "@/lib/db";
 import { applyPayment } from "@/lib/orders";
+import { sellerAccessToken } from "@/lib/sellers";
 
 // Notificaciones de Mercado Pago. Nunca se confía en el cuerpo: se consulta el pago a la API.
 export async function POST(req: NextRequest) {
@@ -19,8 +21,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const payment = await getPayment(String(dataId));
-    if (payment.external_reference) {
+    // el id del pedido viaja en la URL de notificación: si es de un vendedor del marketplace,
+    // el pago está en su cuenta y se consulta con su token
+    const orderId = url.searchParams.get("order");
+    const order = orderId ? await db.order.findUnique({ where: { id: orderId }, include: { seller: true } }) : null;
+    const token = order?.seller ? ((await sellerAccessToken(order.seller)) ?? undefined) : undefined;
+    const payment = await getPayment(String(dataId), token);
+    if (payment.external_reference && (!orderId || payment.external_reference === orderId)) {
       await applyPayment(payment.external_reference, {
         status: payment.status,
         paymentId: String(payment.id),

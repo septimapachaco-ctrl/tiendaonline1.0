@@ -14,6 +14,8 @@ const nav = [
   { href: "/admin/categorias", label: "Categorías" },
   { href: "/admin/clientes", label: "Clientes" },
   { href: "/admin/mensajes", label: "Mensajes" },
+  { href: "/admin/preguntas", label: "Preguntas" },
+  { href: "/admin/vendedores", label: "Vendedores", admin: true },
   { href: "/admin/cupones", label: "Cupones", admin: true },
   { href: "/admin/envios", label: "Envíos", admin: true },
   { href: "/admin/usuarios", label: "Usuarios", admin: true },

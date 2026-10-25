@@ -13,8 +13,8 @@ export async function Header() {
   ]);
   const links = [
     { href: "/productos", label: "Tienda" },
-    ...categories.slice(0, 4).map((c) => ({ href: `/productos?categoria=${c.slug}`, label: c.name })),
-    { href: "/contacto", label: "Contacto" },
+    ...categories.slice(0, 3).map((c) => ({ href: `/productos?categoria=${c.slug}`, label: c.name })),
+    { href: "/vender", label: "Vender" },
   ];
 
   return (

@@ -31,3 +31,6 @@ export const ROLES: Record<string, string> = {
   STAFF: "Operador",
   ADMIN: "Administrador",
 };
+
+/** Opción de entrega del checkout: el vendedor entrega en mano en su ciudad. */
+export const HAND_DELIVERY = "HAND";

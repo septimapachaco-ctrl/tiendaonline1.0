@@ -3,6 +3,7 @@ import type { Coupon } from "@prisma/client";
 import { db } from "./db";
 import { sendMail } from "./email";
 import { money, ORDER_STATUS, variantLabel } from "./format";
+import { visibleProductWhere } from "./sellers";
 import { site } from "./site";
 
 export type CartLine = { variantId: string; quantity: number };
@@ -11,8 +12,13 @@ export type CartLine = { variantId: string; quantity: number };
 export async function priceCart(lines: CartLine[]) {
   const ids = lines.map((l) => l.variantId);
   const variants = await db.variant.findMany({
-    where: { id: { in: ids }, product: { active: true } },
-    include: { product: { include: { images: { orderBy: { sortOrder: "asc" }, take: 1 } } } },
+    // solo productos visibles: la tienda o vendedores habilitados para cobrar
+    where: { id: { in: ids }, product: visibleProductWhere() },
+    include: {
+      product: {
+        include: { images: { orderBy: { sortOrder: "asc" }, take: 1 }, seller: { select: { id: true, displayName: true } } },
+      },
+    },
   });
   const items = lines.flatMap((line) => {
     const v = variants.find((x) => x.id === line.variantId);
@@ -28,6 +34,7 @@ export async function priceCart(lines: CartLine[]) {
         unitPrice: v.price ?? v.product.price,
         quantity: Math.min(line.quantity, 99),
         stock: v.stock,
+        sellerId: v.product.sellerId,
       },
     ];
   });
@@ -111,9 +118,15 @@ export async function applyPayment(orderId: string, info: PaymentInfo) {
   });
 
   if (approved && !wasPaid) {
-    const refreshed = await db.order.findUnique({ where: { id: order.id }, include: { items: true } });
+    const refreshed = await db.order.findUnique({
+      where: { id: order.id },
+      include: { items: true, seller: { include: { user: true } } },
+    });
     if (refreshed) {
       await sendMail(refreshed.email, `Tu pedido #${refreshed.number} ya está nadando hacia vos`, orderEmailHtml(refreshed));
+      if (refreshed.seller) {
+        await sendMail(refreshed.seller.user.email, `¡Vendiste! Pedido #${refreshed.number}`, saleEmailHtml(refreshed));
+      }
       if (process.env.ADMIN_NOTIFY_EMAIL) {
         await sendMail(
           process.env.ADMIN_NOTIFY_EMAIL,
@@ -137,6 +150,8 @@ type OrderForEmail = {
   subtotal: number;
   total: number;
   trackingCode?: string | null;
+  deliveryMethod?: string;
+  deliveryCode?: string | null;
   items: { productName: string; variantName: string; unitPrice: number; quantity: number }[];
 };
 
@@ -154,6 +169,15 @@ export function orderEmailHtml(order: OrderForEmail, intro?: string) {
     <p>${intro ?? `Gracias por elegirnos. Tu pedido <b>#${order.number}</b> está confirmado y ya lo estamos preparando con calma y mucho cuidado.`}</p>
     <p>Estado: <b>${ORDER_STATUS[order.status] ?? order.status}</b></p>
     ${order.trackingCode ? `<p>Código de seguimiento: <b>${order.trackingCode}</b></p>` : ""}
+    ${
+      order.deliveryMethod === "HAND" && order.deliveryCode && order.status !== "DELIVERED"
+        ? `<div style="background:#A8DADC;border-radius:16px;padding:16px;margin:16px 0">
+            <p style="margin:0">Elegiste <b>entrega en mano</b>. Tu código de entrega es:</p>
+            <p style="font-size:32px;font-weight:bold;letter-spacing:8px;margin:8px 0">${order.deliveryCode}</p>
+            <p style="margin:0;font-size:13px">Dáselo a quien te vende <b>solo cuando tengas el producto en tus manos</b> y lo hayas revisado.</p>
+          </div>`
+        : ""
+    }
     <table width="100%" cellpadding="6" style="border-collapse:collapse">
       ${rows}
       <tr><td>Subtotal</td><td align="right">${money(order.subtotal)}</td></tr>
@@ -166,5 +190,29 @@ export function orderEmailHtml(order: OrderForEmail, intro?: string) {
     </p>
     <p style="font-size:13px">Podés seguir tu pedido con este enlace, sin necesidad de crear una cuenta. Guardá este email.</p>
     <p style="font-family:Caveat,cursive;font-size:20px">Hecho con calma de mar</p>
+  </div>`;
+}
+
+type SaleForEmail = OrderForEmail & { commission: number; commissionPct: number; seller: { displayName: string } | null };
+
+/** Aviso al vendedor: no incluye el enlace privado del comprador ni el código de entrega. */
+export function saleEmailHtml(order: SaleForEmail) {
+  const rows = order.items.map((i) => `<li>${i.productName} (${i.variantName}) x${i.quantity}</li>`).join("");
+  const net = order.subtotal - order.commission + order.shippingCost;
+  const delivery =
+    order.deliveryMethod === "HAND"
+      ? "Entrega en mano: coordiná con el comprador y, al entregar, pedile el código de 4 dígitos para cargarlo en tu panel."
+      : "Envío por correo: despachalo dentro de las 48 h hábiles y cargá el código de seguimiento en tu panel.";
+  return `
+  <div style="font-family:Nunito,Arial,sans-serif;max-width:560px;background:#FDFCFB;color:#2B3A55;padding:24px;border-radius:20px">
+    <h2>🐬 ¡Vendiste, ${order.seller?.displayName ?? ""}!</h2>
+    <p>Pedido <b>#${order.number}</b> pagado:</p>
+    <ul>${rows}</ul>
+    <p>Productos: ${money(order.subtotal)} · Comisión (${order.commissionPct} %): -${money(order.commission)}${order.shippingCost ? ` · Envío: ${money(order.shippingCost)}` : ""}</p>
+    <p><b>Te queda: ${money(net)}</b> (antes de la tarifa de Mercado Pago).</p>
+    <p>${delivery}</p>
+    <p style="margin:24px 0">
+      <a href="${site.url}/vender/panel/ventas" style="background:#8ECAE6;color:#2B3A55;padding:12px 22px;border-radius:24px;text-decoration:none;font-weight:bold;display:inline-block">Ver la venta en mi panel</a>
+    </p>
   </div>`;
 }

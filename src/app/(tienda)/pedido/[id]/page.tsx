@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ActionForm } from "@/components/ActionForm";
 import { Delfina } from "@/components/Logo";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { money, ORDER_STATUS } from "@/lib/format";
+import { confirmReceived, reviewOrder } from "../../marketplace-actions";
 
 export const metadata: Metadata = { title: "Estado de tu pedido", robots: { index: false } };
 
@@ -17,7 +19,7 @@ const STEPS = ["PAID", "PREPARING", "SHIPPED", "DELIVERED"] as const;
 export default async function OrderStatusPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [order, user] = await Promise.all([
-    db.order.findUnique({ where: { id }, include: { items: true } }),
+    db.order.findUnique({ where: { id }, include: { items: true, seller: true, review: true } }),
     getCurrentUser(),
   ]);
   if (!order) notFound();
@@ -69,6 +71,56 @@ export default async function OrderStatusPage({ params }: { params: Promise<{ id
             );
           })}
         </ol>
+      )}
+
+      {order.seller && <p className="mt-6 text-center text-sm">Vende: <b>{order.seller.displayName}</b></p>}
+
+      {order.deliveryMethod === "HAND" && order.deliveryCode && ["PAID", "PREPARING"].includes(order.status) && (
+        <div className="mt-4 rounded-[20px] bg-aqua/40 p-5 text-center">
+          <p>Elegiste entrega en mano en {order.seller?.city}. Tu código de entrega es:</p>
+          <p className="my-2 font-mono text-4xl font-bold tracking-[0.4em]">{order.deliveryCode}</p>
+          <p className="text-sm">
+            Quien te vende ya tiene tus datos para coordinar. Dale el código <b>solo cuando tengas el producto en tus
+            manos</b> y lo hayas revisado.
+          </p>
+        </div>
+      )}
+
+      {order.status === "SHIPPED" && order.sellerId && (
+        <form action={confirmReceived} className="card mt-4 text-center">
+          <input type="hidden" name="id" value={order.id} />
+          <p className="mb-3">¿Ya te llegó? Avisanos para cerrar la compra y poder calificar a quien te vendió.</p>
+          <button className="btn">Ya lo recibí</button>
+        </form>
+      )}
+
+      {order.status === "DELIVERED" && order.sellerId && (
+        <div className="card mt-4">
+          {order.review ? (
+            <p className="text-center">
+              Calificaste con {"★".repeat(order.review.rating)}{"☆".repeat(5 - order.review.rating)}. ¡Gracias!
+            </p>
+          ) : (
+            <>
+              <h2 className="text-[22px]">¿Cómo fue tu compra?</h2>
+              <p className="mb-3 text-sm text-muted">Tu opinión ayuda a otras familias a comprar con confianza.</p>
+              <ActionForm action={reviewOrder} submitLabel="Enviar calificación">
+                <input type="hidden" name="id" value={order.id} />
+                <fieldset className="flex flex-wrap gap-2">
+                  <legend className="label">Calificación</legend>
+                  {[5, 4, 3, 2, 1].map((n) => (
+                    <label key={n} className="flex min-h-11 cursor-pointer items-center gap-1 rounded-2xl border-2 border-line px-3 has-[:checked]:border-marea has-[:checked]:bg-aqua/30">
+                      <input type="radio" name="rating" value={n} required defaultChecked={n === 5} />
+                      <span aria-hidden="true">{"★".repeat(n)}</span>
+                      <span className="sr-only">{n} estrellas</span>
+                    </label>
+                  ))}
+                </fieldset>
+                <textarea name="comment" rows={2} maxLength={500} className="input" placeholder="Contanos cómo te fue (opcional)" aria-label="Comentario" />
+              </ActionForm>
+            </>
+          )}
+        </div>
       )}
 
       {order.trackingCode && (

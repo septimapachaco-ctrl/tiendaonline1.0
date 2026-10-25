@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import type { FormState } from "@/app/(tienda)/auth-actions";
 import { hashPassword, requireStaff } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendMail } from "@/lib/email";
 import { ORDER_STATUS, slugify } from "@/lib/format";
 import { orderEmailHtml } from "@/lib/orders";
+import { saveProductFromForm } from "@/lib/products";
 
 const int = (v: FormDataEntryValue | null) => {
   const n = Math.round(Number(String(v ?? "").replace(",", ".")));
@@ -19,75 +19,12 @@ const str = (v: FormDataEntryValue | null) => String(v ?? "").trim();
 
 // ---------- Productos ----------
 
-const variantSchema = z.object({
-  id: z.string().optional(),
-  size: z.string().trim().nullable(),
-  color: z.string().trim().nullable(),
-  sku: z.string().trim().nullable(),
-  stock: z.number().int().min(0),
-  price: z.number().int().min(0).nullable(),
-});
-
-async function uniqueSlug(base: string, exceptId?: string) {
-  let slug = base || "producto";
-  for (let i = 2; ; i++) {
-    const found = await db.product.findUnique({ where: { slug } });
-    if (!found || found.id === exceptId) return slug;
-    slug = `${base}-${i}`;
-  }
-}
-
 export async function saveProduct(_: FormState, formData: FormData): Promise<FormState> {
   await requireStaff();
-  const id = str(formData.get("id")) || undefined;
-  const name = str(formData.get("name"));
-  const price = int(formData.get("price"));
-  if (name.length < 2) return { error: "El nombre es obligatorio." };
-  if (price <= 0) return { error: "El precio debe ser mayor a 0." };
-
-  let variants: z.infer<typeof variantSchema>[];
-  let images: string[];
-  try {
-    variants = z.array(variantSchema).min(1).parse(JSON.parse(str(formData.get("variants"))));
-    images = z.array(z.string().min(1)).parse(JSON.parse(str(formData.get("images")) || "[]"));
-  } catch {
-    return { error: "Revisá las variantes: cada una necesita stock (0 o más). Debe haber al menos una." };
-  }
-  variants = variants.map((v) => ({ ...v, size: v.size || null, color: v.color || null, sku: v.sku || null }));
-
-  const slug = await uniqueSlug(slugify(str(formData.get("slug")) || name), id);
-  const data = {
-    name,
-    slug,
-    description: str(formData.get("description")),
-    price,
-    comparePrice: optInt(formData.get("comparePrice")),
-    categoryId: str(formData.get("categoryId")) || null,
-    active: formData.get("active") === "on",
-    featured: formData.get("featured") === "on",
-  };
-
-  const productId = await db.$transaction(async (tx) => {
-    const product = id
-      ? await tx.product.update({ where: { id }, data })
-      : await tx.product.create({ data });
-
-    const keepIds = variants.flatMap((v) => (v.id ? [v.id] : []));
-    await tx.variant.deleteMany({ where: { productId: product.id, id: { notIn: keepIds } } });
-    for (const { id: vid, ...v } of variants) {
-      if (vid) await tx.variant.update({ where: { id: vid, productId: product.id }, data: v });
-      else await tx.variant.create({ data: { ...v, productId: product.id } });
-    }
-
-    await tx.productImage.deleteMany({ where: { productId: product.id } });
-    await tx.productImage.createMany({
-      data: images.map((url, i) => ({ url, sortOrder: i, productId: product.id })),
-    });
-    return product.id;
-  });
-
+  const result = await saveProductFromForm(formData, { admin: true });
+  if ("error" in result) return result;
   revalidatePath("/", "layout");
-  redirect(`/admin/productos/${productId}?ok=1`);
+  redirect(`/admin/productos/${result.productId}?ok=1`);
 }
 
 export async function deleteProduct(formData: FormData) {
@@ -259,4 +196,39 @@ export async function toggleMessage(formData: FormData) {
   const msg = await db.contactMessage.findUnique({ where: { id } });
   if (msg) await db.contactMessage.update({ where: { id }, data: { read: !msg.read } });
   revalidatePath("/admin/mensajes");
+}
+
+// ---------- Marketplace ----------
+
+export async function updateSellerAdmin(formData: FormData) {
+  await requireStaff("ADMIN");
+  const id = str(formData.get("id"));
+  const status = formData.get("status") === "SUSPENDED" ? "SUSPENDED" : "ACTIVE";
+  const pct = optInt(formData.get("commissionPct"));
+  await db.seller.update({
+    where: { id },
+    data: { status, commissionPct: pct == null ? null : Math.min(Math.max(pct, 0), 50) },
+  });
+  revalidatePath("/", "layout");
+}
+
+export async function saveCommissions(formData: FormData) {
+  await requireStaff("ADMIN");
+  for (const kind of ["USADOS", "ARTESANO"]) {
+    const value = Math.min(Math.max(int(formData.get(kind)), 0), 50);
+    await db.setting.upsert({
+      where: { key: `commission_${kind}` },
+      create: { key: `commission_${kind}`, value: String(value) },
+      update: { value: String(value) },
+    });
+  }
+  revalidatePath("/", "layout");
+}
+
+export async function toggleQuestion(formData: FormData) {
+  await requireStaff();
+  const id = str(formData.get("id"));
+  const q = await db.question.findUnique({ where: { id } });
+  if (q) await db.question.update({ where: { id }, data: { hidden: !q.hidden } });
+  revalidatePath("/", "layout");
 }

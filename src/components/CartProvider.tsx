@@ -12,7 +12,13 @@ export type CartItem = {
   unitPrice: number;
   quantity: number;
   stock: number;
+  /** id del vendedor o "tienda"; cada vendedor se paga por separado */
+  sellerKey?: string;
+  sellerName?: string;
 };
+
+export const STORE_KEY = "tienda";
+export const sellerKeyOf = (i: Pick<CartItem, "sellerKey">) => i.sellerKey ?? STORE_KEY;
 
 type CartContext = {
   items: CartItem[];
@@ -23,6 +29,7 @@ type CartContext = {
   setQuantity: (variantId: string, quantity: number) => void;
   remove: (variantId: string) => void;
   clear: () => void;
+  removeMany: (variantIds: string[]) => void;
 };
 
 const Ctx = createContext<CartContext | null>(null);
@@ -71,6 +78,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         ),
       remove: (variantId) => setItems((prev) => prev.filter((p) => p.variantId !== variantId)),
       clear: () => setItems((prev) => (prev.length ? [] : prev)),
+      removeMany: (ids) =>
+        setItems((prev) => (prev.some((p) => ids.includes(p.variantId)) ? prev.filter((p) => !ids.includes(p.variantId)) : prev)),
     }),
     [items, ready],
   );

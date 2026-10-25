@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import type { FormState } from "@/app/(tienda)/auth-actions";
 import { saveProduct } from "../actions";
 
 type VariantRow = {
@@ -14,6 +15,10 @@ type VariantRow = {
 
 type Props = {
   categories: { id: string; name: string }[];
+  /** "seller": formulario simplificado del panel de vendedores */
+  mode?: "admin" | "seller";
+  action?: (state: FormState, formData: FormData) => Promise<FormState>;
+  conditions?: Record<string, string>;
   product?: {
     id: string;
     name: string;
@@ -24,6 +29,7 @@ type Props = {
     categoryId: string | null;
     active: boolean;
     featured: boolean;
+    condition?: string;
     variants: VariantRow[];
     images: string[];
   };
@@ -31,8 +37,9 @@ type Props = {
 
 const emptyVariant: VariantRow = { size: null, color: null, sku: null, stock: 0, price: null };
 
-export function ProductForm({ categories, product }: Props) {
-  const [state, action, pending] = useActionState(saveProduct, undefined);
+export function ProductForm({ categories, product, mode = "admin", action: save = saveProduct, conditions }: Props) {
+  const seller = mode === "seller";
+  const [state, action, pending] = useActionState(save, undefined);
   const [variants, setVariants] = useState<VariantRow[]>(product?.variants.length ? product.variants : [emptyVariant]);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [imageUrl, setImageUrl] = useState("");
@@ -107,7 +114,7 @@ export function ProductForm({ categories, product }: Props) {
               <input id="price" name="price" type="number" min={1} required defaultValue={product?.price} className="input" />
             </div>
             <div>
-              <label className="label" htmlFor="comparePrice">Precio anterior / tachado (opcional)</label>
+              <label className="label" htmlFor="comparePrice">{seller ? "Precio original de compra (opcional, se muestra tachado)" : "Precio anterior / tachado (opcional)"}</label>
               <input id="comparePrice" name="comparePrice" type="number" min={0} defaultValue={product?.comparePrice ?? ""} className="input" />
             </div>
           </div>
@@ -151,13 +158,13 @@ export function ProductForm({ categories, product }: Props) {
           </div>
           <div className="overflow-x-auto">
             <table className="table">
-              <thead><tr><th>Talle</th><th>Color</th><th>SKU</th><th>Stock</th><th>Precio propio</th><th></th></tr></thead>
+              <thead><tr><th>Talle</th><th>Color</th>{!seller && <th>SKU</th>}<th>{seller ? "Cantidad" : "Stock"}</th><th>Precio propio</th><th></th></tr></thead>
               <tbody>
                 {variants.map((v, i) => (
                   <tr key={v.id ?? `new-${i}`}>
                     <td><input value={v.size ?? ""} onChange={(e) => patch(i, { size: e.target.value || null })} className="input w-20" /></td>
                     <td><input value={v.color ?? ""} onChange={(e) => patch(i, { color: e.target.value || null })} className="input w-28" /></td>
-                    <td><input value={v.sku ?? ""} onChange={(e) => patch(i, { sku: e.target.value || null })} className="input w-24" /></td>
+                    {!seller && <td><input value={v.sku ?? ""} onChange={(e) => patch(i, { sku: e.target.value || null })} className="input w-24" /></td>}
                     <td><input type="number" min={0} value={v.stock} onChange={(e) => patch(i, { stock: Number(e.target.value) })} className="input w-20" /></td>
                     <td><input type="number" min={0} value={v.price ?? ""} placeholder="—" onChange={(e) => patch(i, { price: e.target.value ? Number(e.target.value) : null })} className="input w-28" /></td>
                     <td>
@@ -178,11 +185,21 @@ export function ProductForm({ categories, product }: Props) {
       <aside className="space-y-6">
         <section className="card space-y-4">
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="active" defaultChecked={product?.active ?? true} /> Publicado en la tienda
+            <input type="checkbox" name="active" defaultChecked={product?.active ?? true} /> {seller ? "Publicación activa" : "Publicado en la tienda"}
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="featured" defaultChecked={product?.featured} /> Destacado en el inicio
-          </label>
+          {!seller && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="featured" defaultChecked={product?.featured} /> Destacado en el inicio
+            </label>
+          )}
+          {conditions && (
+            <div>
+              <label className="label" htmlFor="condition">Estado</label>
+              <select id="condition" name="condition" defaultValue={product?.condition ?? (seller ? "COMO_NUEVO" : "NUEVO")} className="input">
+                {Object.entries(conditions).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+              </select>
+            </div>
+          )}
           <div>
             <label className="label" htmlFor="categoryId">Categoría</label>
             <select id="categoryId" name="categoryId" defaultValue={product?.categoryId ?? ""} className="input">
@@ -190,11 +207,19 @@ export function ProductForm({ categories, product }: Props) {
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <div>
-            <label className="label" htmlFor="slug">URL amigable (opcional)</label>
-            <input id="slug" name="slug" defaultValue={product?.slug} placeholder="se genera del nombre" className="input" />
-          </div>
+          {!seller && (
+            <div>
+              <label className="label" htmlFor="slug">URL amigable (opcional)</label>
+              <input id="slug" name="slug" defaultValue={product?.slug} placeholder="se genera del nombre" className="input" />
+            </div>
+          )}
         </section>
+        {seller && (
+          <p className="rounded-2xl bg-aqua/30 p-4 text-xs">
+            No incluyas teléfonos, emails, links ni redes en el título o la descripción: la publicación no se guarda. Las
+            preguntas y el pago se hacen dentro de la página, así tu venta queda protegida.
+          </p>
+        )}
         {state?.error && <p className="rounded bg-red-50 p-3 text-sm text-red-800">{state.error}</p>}
         <button className="btn w-full" disabled={pending || uploading}>{pending ? "Guardando…" : "Guardar producto"}</button>
       </aside>

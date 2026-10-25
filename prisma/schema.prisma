@@ -14,15 +14,79 @@ datasource db {
 
 // role: CUSTOMER | STAFF | ADMIN
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
+  id           String     @id @default(cuid())
+  email        String     @unique
   name         String
   phone        String?
   passwordHash String
-  role         String    @default("CUSTOMER")
-  createdAt    DateTime  @default(now())
+  role         String     @default("CUSTOMER")
+  createdAt    DateTime   @default(now())
   orders       Order[]
   addresses    Address[]
+  seller       Seller?
+  questions    Question[]
+  reviews      Review[]
+}
+
+// Vendedores del marketplace. kind: USADOS (familias que venden lo que ya no usan) | ARTESANO
+// status: ACTIVE | SUSPENDED. Los tokens de Mercado Pago se guardan cifrados.
+model Seller {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind            String    @default("USADOS")
+  displayName     String
+  slug            String    @unique
+  bio             String    @default("")
+  city            String
+  province        String
+  handDelivery    Boolean   @default(true)
+  status          String    @default("ACTIVE")
+  commissionPct   Int? // pisa la comisión general para este vendedor
+  mpUserId        String?
+  mpAccessToken   String?
+  mpRefreshToken  String?
+  mpTokenExpires  DateTime?
+  acceptedTermsAt DateTime
+  createdAt       DateTime  @default(now())
+  products        Product[]
+  orders          Order[]
+  reviews         Review[]
+}
+
+// Pregunta pública sobre un producto; se filtran datos de contacto.
+model Question {
+  id         String    @id @default(cuid())
+  productId  String
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text       String
+  answer     String?
+  answeredAt DateTime?
+  hidden     Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+}
+
+// Calificación del comprador al vendedor, solo para pedidos entregados dentro de la página.
+model Review {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sellerId  String
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  // opcional: también califican quienes compraron sin cuenta, desde el enlace privado del pedido
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  rating    Int
+  comment   String   @default("")
+  createdAt DateTime @default(now())
+}
+
+// Ajustes editables desde el panel (por ejemplo, comisiones).
+model Setting {
+  key   String @id
+  value String
 }
 
 model Address {
@@ -45,20 +109,26 @@ model Category {
 }
 
 model Product {
-  id          String         @id @default(cuid())
-  name        String
-  slug        String         @unique
-  description String         @default("")
-  price       Int // precio base en pesos
+  id           String         @id @default(cuid())
+  name         String
+  slug         String         @unique
+  description  String         @default("")
+  price        Int // precio base en pesos
   comparePrice Int? // precio tachado (opcional)
-  active      Boolean        @default(true)
-  featured    Boolean        @default(false)
-  categoryId  String?
-  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images      ProductImage[]
-  variants    Variant[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  active       Boolean        @default(true)
+  featured     Boolean        @default(false)
+  categoryId   String?
+  category     Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  // null = producto de la tienda; si no, publicación de un vendedor del marketplace
+  sellerId     String?
+  seller       Seller?        @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  // condition: NUEVO | COMO_NUEVO | BUEN_ESTADO | USO_VISIBLE
+  condition    String         @default("NUEVO")
+  questions    Question[]
+  images       ProductImage[]
+  variants     Variant[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
 
 model ProductImage {
@@ -108,40 +178,49 @@ model ShippingZone {
 }
 
 // status: PENDING | PAID | PREPARING | SHIPPED | DELIVERED | CANCELLED
+// deliveryMethod: SHIPPING | HAND (entrega en mano) | PICKUP (retiro en el local de la tienda)
 model Order {
-  id              String        @id @default(cuid())
-  number          Int           @unique
-  userId          String?
-  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  email           String
-  name            String
-  phone           String
-  street          String?
-  city            String?
-  province        String?
-  zip             String?
-  notes           String?
-  shippingZoneId  String?
-  shippingZone    ShippingZone? @relation(fields: [shippingZoneId], references: [id], onDelete: SetNull)
-  shippingName    String
-  shippingCost    Int
-  couponId        String?
-  coupon          Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  discount        Int           @default(0)
-  subtotal        Int
-  total           Int
-  status          String        @default("PENDING")
-  paymentStatus   String?
-  paymentId       String?
-  paymentMethod   String?
-  installments    Int?
-  paidAt          DateTime?
-  stockApplied    Boolean       @default(false)
-  trackingCode    String?
-  adminNotes      String?
-  items           OrderItem[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  number         Int           @unique
+  sellerId       String?
+  seller         Seller?       @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  commissionPct  Int           @default(0)
+  commission     Int           @default(0)
+  deliveryMethod String        @default("SHIPPING")
+  deliveryCode   String?
+  deliveredAt    DateTime?
+  review         Review?
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email          String
+  name           String
+  phone          String
+  street         String?
+  city           String?
+  province       String?
+  zip            String?
+  notes          String?
+  shippingZoneId String?
+  shippingZone   ShippingZone? @relation(fields: [shippingZoneId], references: [id], onDelete: SetNull)
+  shippingName   String
+  shippingCost   Int
+  couponId       String?
+  coupon         Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  discount       Int           @default(0)
+  subtotal       Int
+  total          Int
+  status         String        @default("PENDING")
+  paymentStatus  String?
+  paymentId      String?
+  paymentMethod  String?
+  installments   Int?
+  paidAt         DateTime?
+  stockApplied   Boolean       @default(false)
+  trackingCode   String?
+  adminNotes     String?
+  items          OrderItem[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 model OrderItem {

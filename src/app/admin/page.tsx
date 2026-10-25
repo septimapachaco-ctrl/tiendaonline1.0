@@ -12,10 +12,11 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
   const since = new Date(Date.now() - days * 86400000);
 
   const [paid, pendingCount, toShip, lowStock, recent, items] = await Promise.all([
-    db.order.findMany({ where: { status: { in: PAID_STATUSES }, paidAt: { gte: since } }, select: { total: true, paidAt: true } }),
+    db.order.findMany({ where: { status: { in: PAID_STATUSES }, paidAt: { gte: since } }, select: { total: true, paidAt: true, sellerId: true, commission: true } }),
     db.order.count({ where: { status: "PENDING", createdAt: { gte: since } } }),
-    db.order.count({ where: { status: { in: ["PAID", "PREPARING"] } } }),
-    db.variant.findMany({ where: { stock: { lte: 3 }, product: { active: true } }, include: { product: true }, orderBy: { stock: "asc" }, take: 10 }),
+    // los pedidos y el stock de vendedores del marketplace los gestiona cada vendedor
+    db.order.count({ where: { status: { in: ["PAID", "PREPARING"] }, sellerId: null } }),
+    db.variant.findMany({ where: { stock: { lte: 3 }, product: { active: true, sellerId: null } }, include: { product: true }, orderBy: { stock: "asc" }, take: 10 }),
     db.order.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
     db.orderItem.findMany({
       where: { order: { status: { in: PAID_STATUSES }, paidAt: { gte: since } } },
@@ -23,8 +24,11 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     }),
   ]);
 
-  const revenue = paid.reduce((s, o) => s + o.total, 0);
-  const avg = paid.length ? Math.round(revenue / paid.length) : 0;
+  // ingresos propios: ventas de la tienda + comisiones del marketplace
+  const storeOrders = paid.filter((o) => !o.sellerId);
+  const revenue = storeOrders.reduce((s, o) => s + o.total, 0);
+  const commissions = paid.reduce((s, o) => s + o.commission, 0);
+  const marketplaceCount = paid.length - storeOrders.length;
 
   const byProduct = new Map<string, { qty: number; total: number }>();
   for (const i of items) {
@@ -62,9 +66,9 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Ventas" value={money(revenue)} />
-        <Stat label="Pedidos pagados" value={String(paid.length)} />
-        <Stat label="Ticket promedio" value={money(avg)} />
+        <Stat label="Ventas de la tienda" value={money(revenue)} hint={`${storeOrders.length} pedidos`} />
+        <Stat label="Comisiones del marketplace" value={money(commissions)} hint={`${marketplaceCount} ventas de vendedores`} />
+        <Stat label="Pedidos pagados (total)" value={String(paid.length)} />
         <Stat label="Para preparar / enviar" value={String(toShip)} hint={`${pendingCount} pendientes de pago`} />
       </div>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { getCurrentUser } from "@/lib/auth";
@@ -11,11 +12,10 @@ export const metadata: Metadata = { title: "Mi cuenta", robots: { index: false }
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/cuenta");
-  const orders = await db.order.findMany({
-    where: { userId: user.id },
-    include: { items: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const [orders, seller] = await Promise.all([
+    db.order.findMany({ where: { userId: user.id }, include: { items: true }, orderBy: { createdAt: "desc" } }),
+    db.seller.findUnique({ where: { userId: user.id }, select: { id: true } }),
+  ]);
 
   return (
     <div className="container-page py-10">
@@ -23,6 +23,14 @@ export default async function AccountPage() {
         <h1 className="text-[40px]">Hola, {user.name.split(" ")[0]}</h1>
         <form action={logout}><button className="btn-outline">Cerrar sesión</button></form>
       </div>
+
+      <p className="mt-4 rounded-2xl bg-aqua/30 p-4 text-sm">
+        {seller ? (
+          <>Tenés un perfil de vendedor. <Link href="/vender/panel" className="link">Ir a mi panel de ventas</Link></>
+        ) : (
+          <>¿Tus peques ya no usan algo, o hacés productos para bebés y niños? <Link href="/vender" className="link">Empezá a vender</Link></>
+        )}
+      </p>
 
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
         <section>
@@ -32,7 +40,7 @@ export default async function AccountPage() {
             {orders.map((o) => (
               <div key={o.id} className="card text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-semibold">Pedido #{o.number}</p>
+                  <Link href={`/pedido/${o.id}`} className="link">Pedido #{o.number}</Link>
                   <span className="rounded-full bg-soft px-3 py-1 text-xs font-medium">{ORDER_STATUS[o.status]}</span>
                 </div>
                 <p className="text-muted">{o.createdAt.toLocaleDateString("es-AR")} · {o.shippingName}</p>

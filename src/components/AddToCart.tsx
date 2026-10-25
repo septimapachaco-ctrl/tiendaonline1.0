@@ -9,7 +9,7 @@ import { useCart } from "./CartProvider";
 type Variant = { id: string; size: string | null; color: string | null; stock: number; price: number | null };
 
 type Props = {
-  product: { name: string; slug: string; price: number; image: string | null };
+  product: { name: string; slug: string; price: number; image: string | null; sellerKey?: string; sellerName?: string };
   variants: Variant[];
 };
 
@@ -38,6 +38,8 @@ export function AddToCart({ product, variants }: Props) {
       unitPrice: price,
       quantity: qty,
       stock: variant.stock,
+      sellerKey: product.sellerKey,
+      sellerName: product.sellerName,
     });
     track("add_to_cart", { currency: "ARS", value: price * qty, content_name: product.name });
     setAdded(true);
@@ -77,7 +79,7 @@ export function AddToCart({ product, variants }: Props) {
         </button>
       </div>
       {available && variant!.stock <= 3 && (
-        <p className="text-sm text-muted">Quedan {variant!.stock} unidades</p>
+        <p className="text-sm text-muted">{variant!.stock === 1 ? "Última unidad disponible" : `Quedan ${variant!.stock} unidades`}</p>
       )}
       {added && (
         <p className="rounded-2xl bg-aqua/50 p-3 text-sm">

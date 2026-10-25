@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { ProductCard } from "@/components/ProductCard";
 import { db } from "@/lib/db";
+import { visibleProductWhere } from "@/lib/sellers";
 import { slugify } from "@/lib/format";
 
 type SP = Promise<Record<string, string | undefined>>;
@@ -18,14 +19,17 @@ export async function generateMetadata({ searchParams }: { searchParams: SP }): 
 
 export default async function ProductsPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
-  const { q, categoria, talle, color, min, max, orden } = sp;
+  const { q, categoria, talle, color, min, max, orden, origen, estado } = sp;
 
   const variantFilter: Prisma.VariantWhereInput = {
     ...(talle ? { size: talle } : {}),
     ...(color ? { color } : {}),
   };
-  const where: Prisma.ProductWhereInput = {
-    active: true,
+  const filters: Prisma.ProductWhereInput = {
+    ...(origen === "tienda" ? { sellerId: null } : {}),
+    ...(origen === "usados" ? { seller: { kind: "USADOS" } } : {}),
+    ...(origen === "artesanos" ? { seller: { kind: "ARTESANO" } } : {}),
+    ...(estado === "nuevo" ? { condition: "NUEVO" } : estado === "usado" ? { condition: { not: "NUEVO" } } : {}),
     ...(q
       ? {
           OR: [
@@ -40,6 +44,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
     ...(talle || color ? { variants: { some: variantFilter } } : {}),
     ...(min || max ? { price: { ...(min ? { gte: Number(min) } : {}), ...(max ? { lte: Number(max) } : {}) } } : {}),
   };
+  // AND: la visibilidad (tienda o vendedores habilitados) y la búsqueda usan cada una su propio OR
+  const where: Prisma.ProductWhereInput = { AND: [visibleProductWhere(), filters] };
   const orderBy: Prisma.ProductOrderByWithRelationInput =
     orden === "precio-asc" ? { price: "asc" } : orden === "precio-desc" ? { price: "desc" } : { createdAt: "desc" };
 
@@ -47,10 +53,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
     db.product.findMany({
       where,
       orderBy,
-      include: { images: { orderBy: { sortOrder: "asc" }, take: 1 }, variants: { select: { stock: true } } },
+      include: {
+        images: { orderBy: { sortOrder: "asc" }, take: 1 },
+        variants: { select: { stock: true } },
+        seller: { select: { displayName: true } },
+      },
     }),
     db.category.findMany({ orderBy: { sortOrder: "asc" } }),
-    db.variant.findMany({ where: { product: { active: true } }, select: { size: true, color: true } }),
+    db.variant.findMany({ where: { product: visibleProductWhere() }, select: { size: true, color: true } }),
   ]);
   const sizes = [...new Set(variantValues.map((v) => v.size).filter(Boolean))] as string[];
   const colors = [...new Set(variantValues.map((v) => v.color).filter(Boolean))] as string[];
@@ -58,7 +68,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
 
   return (
     <div className="container-page py-10">
-      <h1 className="text-[40px]">{current?.name ?? (q ? `Resultados para “${q}”` : "Todos los productos")}</h1>
+      <h1 className="text-[40px]">
+        {current?.name ??
+          (q
+            ? `Resultados para “${q}”`
+            : origen === "usados"
+              ? "Ropero de familias"
+              : origen === "artesanos"
+                ? "Hecho a mano"
+                : "Todos los productos")}
+      </h1>
       <p className="mt-1 text-sm text-muted">{products.length} productos</p>
 
       <div className="mt-8 grid gap-8 md:grid-cols-[220px_1fr]">
@@ -106,6 +125,23 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
                 <input name="min" type="number" min={0} defaultValue={min} placeholder="Mín" className="input" />
                 <input name="max" type="number" min={0} defaultValue={max} placeholder="Máx" className="input" />
               </div>
+            </div>
+            <div>
+              <label className="label" htmlFor="origen">Quién vende</label>
+              <select id="origen" name="origen" defaultValue={origen ?? ""} className="input">
+                <option value="">Todos</option>
+                <option value="tienda">La tienda</option>
+                <option value="usados">Familias (usados)</option>
+                <option value="artesanos">Artesanos y productores</option>
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="estado">Estado</label>
+              <select id="estado" name="estado" defaultValue={estado ?? ""} className="input">
+                <option value="">Nuevos y usados</option>
+                <option value="nuevo">Solo nuevos</option>
+                <option value="usado">Solo usados</option>
+              </select>
             </div>
             <div>
               <label className="label" htmlFor="orden">Ordenar</label>
